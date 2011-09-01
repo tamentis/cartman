@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import re
+import sys
+import optparse
+
+import cartlib.app
+import cartlib.exceptions
+
+
+EPILOG="""Commands:
+   report <id>      Show tickets list for given report
+"""
+
+
+def main():
+    application = cartlib.app.CartmanApp()
+
+    parser = optparse.OptionParser(usage="usage: cartman command [options]",
+            description=EPILOG)
+    parser.add_option("-u", "--user", dest="username",
+            help="Username to query.")
+    parser.add_option("-l", "--list-commands", dest="list_commands",
+            action="store_true", help="List all available commands.")
+    parser.add_option("-s", "--id-from-stdin", dest="stdin_id",
+            action="store_true", help="Attempt to fetch a ticket id from stdin.")
+
+    (options, args) = parser.parse_args()
+
+    try:
+        if not args:
+            raise cartlib.exceptions.UsageException("No command")
+
+        if options.stdin_id:
+            data = sys.stdin.read()
+            m = re.match(".*#(\d+).*", data, flags=(re.MULTILINE|re.DOTALL))
+            if not m:
+                raise cartlib.exceptions.UsageException("No id on stdin")
+
+            args.append(m.group(1))
+
+        if options.list_commands:
+            application.print_commands()
+        else:
+            application.run(options, args)
+    except cartlib.exceptions.UsageException, ex:
+        sys.stderr.write("error: %s\n\n" % ex)
+        parser.print_help(file=sys.stderr)
+    except cartlib.exceptions.FatalError, ex:
+        sys.stderr.write("error: %s\n" % ex)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
