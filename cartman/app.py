@@ -99,11 +99,11 @@ class CartmanApp:
         return self.session.post(self.base_url + query_string, data=data)
 
     def login(self):
-        """Ensures the current session is logged-in."""
+        """Ensure the current session is logged-in, accessing the main page."""
         if self.logged_in:
             return
 
-        r = self.get("/login")
+        r = self.get("/")
 
         if r.status_code not in (200, 302):
             raise exceptions.LoginError("login failed")
