@@ -8,6 +8,7 @@ import json
 import urllib
 import requests
 import difflib
+import StringIO
 import tempfile
 import webbrowser
 import email.parser
@@ -104,13 +105,14 @@ class CartmanApp:
         if r.status_code not in (200, 302):
             raise LoginError("login failed")
 
-    def dict_open(self, query_string):
+    def get_dicts(self, query_string):
         self.login()
-        f = self.get(query_string)
-        return csv.DictReader(f, delimiter="\t")
+        r = self.get(query_string)
+        buf = StringIO.StringIO(r.read())
+        return csv.DictReader(buf, delimiter="\t")
 
-    def ticket_open(self, query_string):
-        for ticket_dict in self.dict_open(query_string):
+    def get_tickets(self, query_string):
+        for ticket_dict in self.get_dicts(query_string):
             yield ticket.factory(ticket_dict)
 
     # TODO fix indent on doc strings..
@@ -147,7 +149,7 @@ class CartmanApp:
 
         query_string = "/report/%d?format=tab" % report_id
 
-        for t in self.ticket_open(query_string):
+        for t in self.get_tickets(query_string):
             print(t.format_title())
 
     def run_ticket(self, ticket_id):
@@ -160,7 +162,7 @@ class CartmanApp:
 
         query_string = "/ticket/%d?format=tab" % ticket_id
 
-        t = self.ticket_open(query_string).next()
+        t = self.get_tickets(query_string).next()
         title = t.format_title()
 
         print(title)
