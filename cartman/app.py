@@ -2,12 +2,15 @@
 
 import csv
 import sys
+import re
 import os
-import email.parser
+import json
 import urllib
 import requests
+import difflib
 import tempfile
 import webbrowser
+import email.parser
 import ConfigParser
 
 import exceptions
@@ -19,20 +22,9 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
-TICKET_TEMPLATE = """To: %(To)s
-Cc: %(Cc)s
-Subject: %(Subject)s
-Type: %(Type)s
-Component: %(Component)s
-Milestone: %(Milestone)s
-Priority: %(Priority)s
-
-
-"""
-
 
 class CartmanApp:
-    
+
     def __init__(self):
         self._read_config()
         self.session = requests.session(auth=(self.username, self.password))
@@ -45,6 +37,8 @@ class CartmanApp:
         self.base_url = cp.get("trac", "base_url")
         self.username = cp.get("trac", "username")
         self.password = cp.get("trac", "password")
+        self.required_fields = ["To", "Milestone", "Component", "Subject"]
+        self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
     def _underline(self, text):
         return "-" * len(text)
@@ -59,6 +53,38 @@ class CartmanApp:
                 return cookie.value
 
         return ""
+
+    def _get_properties(self):
+        token = "var properties="
+        lines = [l for l in self.get("/query").read().splitlines() if token in l]
+
+        if not lines:
+            return {}
+
+        line = (
+            lines.pop()
+                 .replace(token, "")
+                 .replace(";","")
+        )
+
+        return json.loads(line)
+
+    def _fuzzy_find(self, value, options):
+        value = value.lower()
+        options = {opt.lower(): opt for opt in options}
+
+        matches = difflib.get_close_matches(value, options.keys())
+
+        if not matches:
+            for l_opt, opt in options.items():
+                pattern = r".*\b%s\b.*" % value
+                if re.match(pattern, l_opt):
+                    matches.append(opt)
+
+        if len(matches) == 1:
+            return matches.pop()
+
+        return None
 
     def get(self, query_string, data=None):
         return self.session.get(self.base_url + query_string, data=data)
@@ -160,19 +186,31 @@ class CartmanApp:
 
         self.open_in_browser(ticket)
 
-    def run_new(self):
+    def _format_headers(self, headers):
+        sort_ref = self.default_fields + headers.keys()
+        pairs = headers.iteritems()
+        pairs = ((k, v) for k, v in pairs if k in self.default_fields or v)
+        pairs = sorted(pairs, key=lambda pair: sort_ref.index(pair[0]))
+        return "\n".join([": ".join(pair) for pair in pairs])
+
+    def run_new(self, owner=None):
+        owner = owner or self.username
         self.login()
         valid = False
         headers = {
             "Subject": "",
-            "To": self.username,
+            "To": owner,
             "Cc": "",
             "Milestone": "",
             "Component": "",
             "Priority": "2",
             "Type": "defect",
+            "Keywords": "",
+            "Version": "",
         }
-        body = ""
+        body = "\n"
+
+        properties = self._get_properties()
 
         while not valid:
             # Assume the user will produce a valid ticket
@@ -181,7 +219,8 @@ class CartmanApp:
             # Load the current values in a temp file for editing
             (fd, filename) = tempfile.mkstemp()
             fp = os.fdopen(fd, "w")
-            fp.write(TICKET_TEMPLATE % headers)
+            fp.write(self._format_headers(headers))
+            fp.write("\n\n")
             fp.write(body)
             fp.close()
             os.system("$EDITOR '%s'" % filename)
@@ -195,10 +234,27 @@ class CartmanApp:
             headers.update(em)
 
             errors = []
-             
-            for key in ("Subject", "To"):
+            fuzzy_match_fields = ("Milestone", "Component", "Type", "Version")
+
+            for key in self.required_fields:
+                if key in fuzzy_match_fields:
+                    continue
                 if not headers[key] or "**ERROR**" in headers[key]:
-                    errors.append("'%s' cannot be blank" % key)
+                    errors.append("Invalid '%s': cannot be blank" % key)
+
+            for key in fuzzy_match_fields:
+                valid_options = properties[key.lower()]["options"]
+
+                if headers[key] not in valid_options:
+                    m = self._fuzzy_find(headers[key], valid_options)
+                    if m:
+                        headers[key] = m
+                    else:
+                        if key in self.required_fields:
+                            errors.append("Invalid '%s': expected: %s" % \
+                                        (key, ", ".join(valid_options)))
+                        else:
+                            headers[key] = ""
 
             if errors:
                 valid = False
@@ -212,15 +268,15 @@ class CartmanApp:
                     raise exceptions.FatalError("Ticket creation interrupted")
 
         r = self.post("/newticket", {
-            "field_summary": em["Subject"],
-            "field_type": "defect",
-            "field_version": "1.0",
-            "field_description": "This is brilliant",
-            "field_milestone": "milestone1",
-            "field_component": "component1",
-            "field_owner": "bjanin",
-            "field_keywords": "",
-            "field_cc": "",
+            "field_summary": headers["Subject"],
+            "field_type": headers["Type"],
+            "field_version": headers["Version"],
+            "field_description": body,
+            "field_milestone": headers["Milestone"],
+            "field_component": headers["Component"],
+            "field_owner": headers["To"],
+            "field_keywords": headers["Keywords"],
+            "field_cc": headers["Cc"],
             "field_attachment": "",
         })
 
