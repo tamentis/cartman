@@ -60,7 +60,7 @@ class CartmanApp:
 
     def _get_properties(self):
         token = "var properties="
-        lines = [l for l in self.get("/query").read().splitlines() if token in l]
+        lines = [l for l in self.get("/query").content.splitlines() if token in l]
 
         if not lines:
             return {}
@@ -106,12 +106,12 @@ class CartmanApp:
         r = self.get("/login")
 
         if r.status_code not in (200, 302):
-            raise LoginError("login failed")
+            raise exceptions.LoginError("login failed")
 
     def get_dicts(self, query_string):
         self.login()
         r = self.get(query_string)
-        buf = StringIO.StringIO(r.read())
+        buf = StringIO.StringIO(r.content)
         return csv.DictReader(buf, delimiter="\t")
 
     def get_tickets(self, query_string):
