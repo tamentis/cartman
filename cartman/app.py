@@ -83,10 +83,10 @@ class CartmanApp:
             for l_opt, opt in options.items():
                 pattern = r".*\b%s\b.*" % value
                 if re.match(pattern, l_opt):
-                    matches.append(opt)
+                    matches.append(l_opt)
 
         if len(matches) == 1:
-            return matches.pop()
+            return options[matches.pop()]
 
         return None
 
@@ -187,7 +187,7 @@ class CartmanApp:
         except ValueError:
             raise exceptions.InvalidParameter("ticket_id should be an integer")
 
-        self.open_in_browser(ticket)
+        self.open_in_browser(ticket_id)
 
     def _format_headers(self, headers):
         sort_ref = self.default_fields + headers.keys()
