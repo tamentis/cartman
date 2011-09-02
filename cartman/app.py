@@ -44,6 +44,9 @@ class CartmanApp:
     def _underline(self, text):
         return "-" * len(text)
 
+    def _title(self, text):
+        return text + "\n" + self._underline(text)
+
     def _get_form_token(self):
         """Return the form_token sent on all the POST forms for validation.
         This value is store as a cookie, on the session.
@@ -120,8 +123,7 @@ class CartmanApp:
         for attrname in dir(self):
             if attrname.startswith("run_"):
                 func_name = attrname[4:]
-                print(func_name)
-                print(self._underline(func_name))
+                print(self._title(func_name))
                 print(getattr(self, attrname).__doc__)
                 print("")
 
@@ -165,8 +167,7 @@ class CartmanApp:
         t = self.get_tickets(query_string).next()
         title = t.format_title()
 
-        print(title)
-        print(self._underline(title))
+        print(self._title(title))
         print("")
 
         print(t.description)
@@ -195,7 +196,20 @@ class CartmanApp:
         pairs = sorted(pairs, key=lambda pair: sort_ref.index(pair[0]))
         return "\n".join([": ".join(pair) for pair in pairs])
 
+    def run_properties(self):
+        """Lists the system's properties (Milestone, Component, etc.)."""
+
+        properties = self._get_properties()
+
+        print(self._title("Milestones"))
+        print(", ".join(properties["milestone"]["options"]) + "\n")
+
+        print(self._title("Components"))
+        print(", ".join(properties["component"]["options"]) + "\n")
+
+
     def run_new(self, owner=None):
+        """Create a new ticket."""
         owner = owner or self.username
         self.login()
         valid = False
@@ -219,7 +233,7 @@ class CartmanApp:
             valid = True
 
             # Load the current values in a temp file for editing
-            (fd, filename) = tempfile.mkstemp()
+            (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
             fp = os.fdopen(fd, "w")
             fp.write(self._format_headers(headers))
             fp.write("\n\n")
@@ -231,6 +245,8 @@ class CartmanApp:
             ep = email.parser.Parser()
             with open(filename, "r") as fp:
                 em = ep.parse(fp)
+
+            os.unlink(filename)
 
             body = em.get_payload()
             headers.update(em)
