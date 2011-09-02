@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 import re
 import sys
@@ -19,11 +19,16 @@ def main():
     parser = optparse.OptionParser(usage="usage: cartman command [options]",
             description=EPILOG)
     parser.add_option("-u", "--user", dest="username",
-            help="Username to query.")
+                      help="Username to query.")
     parser.add_option("-l", "--list-commands", dest="list_commands",
-            action="store_true", help="List all available commands.")
+                      action="store_true", help="List all available commands.")
     parser.add_option("-s", "--id-from-stdin", dest="stdin_id",
-            action="store_true", help="Attempt to fetch a ticket id from stdin.")
+                      action="store_true",
+                      help="Attempt to fetch a ticket id from stdin.")
+    parser.add_option("-O", "--open-after", dest="open_after",
+                      action="store_true",
+                      help="""If operation is successful, try to open this 
+                      ticket in your browser right after.""")
 
     (options, args) = parser.parse_args()
 

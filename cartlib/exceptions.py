@@ -12,3 +12,9 @@ class InvalidParameter(UsageException):
 class FatalError(Exception):
     """Unrecoverable error during runtime."""
     pass
+
+class RequestException(FatalError):
+    """A request to Trac failed."""
+
+class LoginError(RequestException):
+    """Raise when unable to login."""

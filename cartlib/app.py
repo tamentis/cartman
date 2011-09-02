@@ -5,7 +5,7 @@ import sys
 import os
 import email.parser
 import urllib
-import urllib2
+import requests
 import tempfile
 import webbrowser
 import ConfigParser
@@ -19,13 +19,13 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
-TICKET_TEMPLATE = """To: bjanin
-Cc: 
-Subject: 
-Type: defect
-Component:
-Milestone:
-Priority: 2
+TICKET_TEMPLATE = """To: %(To)s
+Cc: %(Cc)s
+Subject: %(Subject)s
+Type: %(Type)s
+Component: %(Component)s
+Milestone: %(Milestone)s
+Priority: %(Priority)s
 
 
 """
@@ -35,37 +35,52 @@ class CartmanApp:
     
     def __init__(self):
         self._read_config()
-        self._init_urllib()
-
-    def _init_urllib(self):
-        authinfo = urllib2.HTTPBasicAuthHandler()
-        authinfo.add_password(realm=self.realm,
-                uri=self.base_url + "/",
-                user=self.username,
-                passwd=self.password)
-
-        opener = urllib2.build_opener(authinfo)
-        urllib2.install_opener(opener)
+        self.session = requests.session(auth=(self.username, self.password))
+        self.logged_in = False
 
     def _read_config(self):
         cp = ConfigParser.ConfigParser()
         cp.read(CONFIG_LOCATIONS)
 
         self.base_url = cp.get("trac", "base_url")
-        self.realm = cp.get("trac", "realm")
         self.username = cp.get("trac", "username")
         self.password = cp.get("trac", "password")
 
     def _underline(self, text):
         return "-" * len(text)
 
-    def raw_open(self, query_string, data=None):
-        print(self.base_url + query_string)
-        print(data)
-        return urllib2.urlopen(self.base_url + query_string, data=data)
+    def _get_form_token(self):
+        """Return the form_token sent on all the POST forms for validation.
+        This value is store as a cookie, on the session.
+
+        """
+        for cookie in self.session.cookies:
+            if cookie.name == "trac_form_token":
+                return cookie.value
+
+        return ""
+
+    def get(self, query_string, data=None):
+        return self.session.get(self.base_url + query_string, data=data)
+
+    def post(self, query_string, data=None):
+        if data:
+            data["__FORM_TOKEN"] = self._get_form_token()
+        return self.session.post(self.base_url + query_string, data=data)
+
+    def login(self):
+        """Ensures the current session is logged-in."""
+        if self.logged_in:
+            return
+
+        r = self.get("/login")
+
+        if r.status_code not in (200, 302):
+            raise LoginError("login failed")
 
     def dict_open(self, query_string):
-        f = self.raw_open(query_string)
+        self.login()
+        f = self.get(query_string)
         return csv.DictReader(f, delimiter="\t")
 
     def ticket_open(self, query_string):
@@ -83,6 +98,8 @@ class CartmanApp:
                 print("")
 
     def run(self, options, args):
+        self.open_after = options.open_after
+
         if args:
             command = args.pop(0)
         else:
@@ -90,8 +107,7 @@ class CartmanApp:
 
         func_name = "run_" + command
         if hasattr(self, func_name):
-            func = getattr(self, func_name)
-            func(*args)
+            getattr(self, func_name)(*args)
         else:
             raise exceptions.UnknownCommand("Unknown command: " + command)
 
@@ -127,6 +143,13 @@ class CartmanApp:
 
         print(t.description)
 
+    def open_in_browser(self, ticket_id):
+        webbrowser.open(self.base_url + "/ticket/%d" % ticket_id)
+
+    def open_in_browser_on_request(self, ticket_id):
+        if self.open_after:
+            self.open_in_browser(ticket_id)
+
     def run_open(self, ticket_id):
         """Open a ticket in your browser."""
 
@@ -135,22 +158,60 @@ class CartmanApp:
         except ValueError:
             raise exceptions.InvalidParameter("ticket_id should be an integer")
 
-        webbrowser.open(self.base_url + "/ticket/%d" % ticket_id)
+        self.open_in_browser(ticket)
 
     def run_new(self):
-        (fd, name) = tempfile.mkstemp()
-        fp = os.fdopen(fd, "w")
-        fp.write(TICKET_TEMPLATE)
-        fp.close()
-        os.system("$EDITOR \"%s\"" % name)
+        self.login()
+        valid = False
+        headers = {
+            "Subject": "",
+            "To": self.username,
+            "Cc": "",
+            "Milestone": "",
+            "Component": "",
+            "Priority": "2",
+            "Type": "defect",
+        }
+        body = ""
 
-        ep = email.parser.Parser()
-        with open(name, "r") as fp:
-            em = ep.parse(fp)
+        while not valid:
+            # Assume the user will produce a valid ticket
+            valid = True
 
-        x = self.raw_open("/newticket")
+            # Load the current values in a temp file for editing
+            (fd, filename) = tempfile.mkstemp()
+            fp = os.fdopen(fd, "w")
+            fp.write(TICKET_TEMPLATE % headers)
+            fp.write(body)
+            fp.close()
+            os.system("$EDITOR '%s'" % filename)
 
-        self.raw_open("/newticket", urllib.urlencode({
+            # Use the email parser to get the headers.
+            ep = email.parser.Parser()
+            with open(filename, "r") as fp:
+                em = ep.parse(fp)
+
+            body = em.get_payload()
+            headers.update(em)
+
+            errors = []
+             
+            for key in ("Subject", "To"):
+                if not headers[key] or "**ERROR**" in headers[key]:
+                    errors.append("'%s' cannot be blank" % key)
+
+            if errors:
+                valid = False
+                print("\nFound the following errors:")
+                for error in errors:
+                    print(" - %s" % error)
+
+                try:
+                    raw_input("\n-- Hit Enter to return to editor, ^C to abort --\n")
+                except KeyboardInterrupt:
+                    raise exceptions.FatalError("Ticket creation interrupted")
+
+        r = self.post("/newticket", {
             "field_summary": em["Subject"],
             "field_type": "defect",
             "field_version": "1.0",
@@ -161,9 +222,16 @@ class CartmanApp:
             "field_keywords": "",
             "field_cc": "",
             "field_attachment": "",
-            "__FORM_TOKEN": "a83d76f29b1d51fd844a5465",
-            "submit": "Create Ticket",
-        }))
+        })
 
-        import pdb; pdb.set_trace()
-            
+        if r.status_code != 200:
+            raise exceptions.RequestException("unable to create new ticket.")
+
+        try:
+            ticket_id = int(r.url.split("/")[-1])
+        except:
+            raise exceptions.RequestException("returned ticket_id is invalid.")
+
+        self.open_in_browser_on_request(ticket_id)
+        print("ticket #%d created" % ticket_id)
+
