@@ -1,6 +1,11 @@
 cartman
 =======
 
+*cartman* is an overweight, immature, spoiled, outspoken, lazy, foul-mouthed,
+mean-spirited, racist, sexist, anti-semitic, xenophobic, sociopathic,
+narcissistic, and ill-tempered elementary school student living with his
+mother. Wait... wrong cartman.
+
 *cartman* allows you to create and manage your *Trac* tickets from the
 command-line, without the need to setup physical access to the *Trac*
 installation/database. All you need is a *Trac* account.
