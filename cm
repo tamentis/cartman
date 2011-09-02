@@ -4,8 +4,8 @@ import re
 import sys
 import optparse
 
-import cartlib.app
-import cartlib.exceptions
+import cartman.app
+import cartman.exceptions
 
 
 EPILOG="""Commands:
@@ -14,7 +14,7 @@ EPILOG="""Commands:
 
 
 def main():
-    application = cartlib.app.CartmanApp()
+    application = cartman.app.CartmanApp()
 
     parser = optparse.OptionParser(usage="usage: cartman command [options]",
             description=EPILOG)
@@ -34,13 +34,13 @@ def main():
 
     try:
         if not args:
-            raise cartlib.exceptions.UsageException("No command")
+            raise cartman.exceptions.UsageException("No command")
 
         if options.stdin_id:
             data = sys.stdin.read()
             m = re.match(".*#(\d+).*", data, flags=(re.MULTILINE|re.DOTALL))
             if not m:
-                raise cartlib.exceptions.UsageException("No id on stdin")
+                raise cartman.exceptions.UsageException("No id on stdin")
 
             args.append(m.group(1))
 
@@ -48,10 +48,10 @@ def main():
             application.print_commands()
         else:
             application.run(options, args)
-    except cartlib.exceptions.UsageException, ex:
+    except cartman.exceptions.UsageException, ex:
         sys.stderr.write("error: %s\n\n" % ex)
         parser.print_help(file=sys.stderr)
-    except cartlib.exceptions.FatalError, ex:
+    except cartman.exceptions.FatalError, ex:
         sys.stderr.write("error: %s\n" % ex)
         sys.exit(1)
 
