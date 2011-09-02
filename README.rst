@@ -1,12 +1,66 @@
 cartman
 =======
 
-cartman allows you to create and manage your `trac` tickets from the
-command-line, without the need to setup physical access to the Trac
-installation. All you need is a ~/.cartmanrc file with the following::
+*cartman* allows you to create and manage your *Trac* tickets from the
+command-line, without the need to setup physical access to the *Trac*
+installation/database. All you need is a *Trac* account.
+
+Configuration
+-------------
+At a minimum you need to do is create a ``~/.cartmanrc`` file with the
+following::
 
     [trac]
     base_url = http://your.trac.install/
     username = tamentis
     password = sitnemat
+
+If you are using vim as your default editor, you also might want to add
+email-like syntax highlighting to match the ``.cm.ticket`` extension::
+
+    autocmd BufNewFile *.cm.ticket setf mail
+
+Walkthrough
+-----------
+
+Report Listing
+^^^^^^^^^^^^^^
+
+Dump a list of tickets on screen, without details::
+
+    $ cm report 1
+    #142. fix world hunger (bjanin@)
+    #159. ignore unpaid rent (bjanin@)
+
+System Properties
+^^^^^^^^^^^^^^^^^
+
+This will dump on screen all the Milestones, Components, Versions::
+
+    $ cm properties
+
+Creating a ticket
+^^^^^^^^^^^^^^^^^
+
+Creating a ticket will work similarly to writing a new email in mutt, it loads
+your current $EDITOR and lets you edit the details of the ticket. Assuming all
+the parameters are correct, it will create the ticket as soon as you save and
+exit and return the ticket number. If your ticket does not appear valid
+(missing required field, inexistent Milestone, etc.) 'cartman' will stop and
+lists each error and let you return to your editor::
+
+    $ cm new
+    -- opens your editor --
+
+    Found the following errors:
+     - Invalid 'Subject': cannot be blank
+     - Invalid 'Milestone': expected: Bug Bucket, Release 2, Release 3
+
+    -- Hit Enter to return to editor, ^C to abort --
+
+The first parameter to ``cm`` is the owner of the ticket, it populates the
+``To`` field by default::
+
+    $ cm new jcarmack
+
 
