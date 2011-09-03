@@ -67,6 +67,12 @@ The first parameter to ``cm`` is the owner of the ticket, it populates the
 
     $ cm new jcarmack
 
+TODO
+----
+ - create new comments
+ - find a way to read comments
+ - set/view status (with optional comment)
+
 
 .. _Trac: http://trac.edgewall.org/
 .. _vim: http://www.vim.org/
