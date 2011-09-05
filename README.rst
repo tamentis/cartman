@@ -77,12 +77,27 @@ occurs::
 
     $ cm comment 1
 
+If the comment is short enough to fit on the command line, you may use the
+``-m`` flag as such::
+
+    $ cm comment 1 -m "you forgot to call twiddle()"
+
 Setting the status of a ticket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Set a ticket as accepted::
 
-    $ cp status 1 accept
+    $ cm status 1 accept
+
+If you need to add a comment with this status change, you can use the ``-c``
+flag, it will open your default editor::
+
+    $ cm status 1 reopen -c
+
+You may also use the ``-m`` flag to define the comment inline, without the use
+of an editor::
+
+    $ cm status 1 reopen -m "does not work with x = y"
 
 TODO
 ----

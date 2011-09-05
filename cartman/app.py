@@ -208,6 +208,8 @@ class CartmanApp:
 
         """
         self.open_after = args.open_after
+        self.add_comment = args.add_comment
+        self.comment = args.comment
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
@@ -294,6 +296,15 @@ class CartmanApp:
         print(ui.title("Status"))
         print(", ".join(properties["status"]["options"]) + "\n")
 
+    def _read_comment(self):
+        """Prompt for a piece of text via the current EDITOR. Returns a string.
+        """
+        (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
+        self._editor(filename)
+        with open(filename) as fp:
+            comment = fp.read()
+        return comment
+
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
         anything if successful.
@@ -309,11 +320,10 @@ class CartmanApp:
         r = self.get("/ticket/%d" % ticket_id)
         timestamp = text.extract_timestamp(r.content)
 
-        # Read the comment content from the text editor
-        (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
-        self._editor(filename)
-        with open(filename) as fp:
-            comment = fp.read()
+        if self.comment:
+            comment = self.comment
+        else:
+            comment = self._read_comment()
 
         r = self.post("/ticket/%d" % ticket_id, {
             "ts": timestamp,
@@ -344,9 +354,17 @@ class CartmanApp:
             raise exceptions.FatalError("bad status (for this ticket: %s)" % \
                                         ", ".join(statuses))
 
+        if self.comment:
+            comment = self.comment
+        elif self.add_comment:
+            comment = self._read_comment()
+        else:
+            comment = ""
+
         r = self.post("/ticket/%d" % ticket_id, {
             "ts": timestamp,
             "action": status,
+            "comment": comment,
         })
 
         if "system-message" in r.content or r.status_code != 200:
