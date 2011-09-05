@@ -79,9 +79,9 @@ occurs::
 
 TODO
 ----
- - create new comments
  - find a way to read comments
  - set/view status (with optional comment)
+ - pull the report name for the ``report`` command.
 
 
 .. _Trac: http://trac.edgewall.org/

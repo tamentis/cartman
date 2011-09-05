@@ -2,6 +2,7 @@
 Various text processing functions.
 """
 
+import re
 import difflib
 
 import exceptions

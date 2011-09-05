@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import csv
-import sys
 import re
 import os
 import json
-import urllib
 import requests
 import StringIO
 import tempfile
@@ -161,7 +159,7 @@ class CartmanApp:
         """Initial attempt to return a help screen with all the commands."""
         for attrname in dir(self):
             if attrname.startswith("run_"):
-                self.print_function_help(func_name)
+                self.print_function_help(attrname)
                 print("")
 
     def open_in_browser(self, ticket_id):
