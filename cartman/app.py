@@ -167,8 +167,11 @@ class CartmanApp:
         if self.logged_in:
             return
 
+        # Seems that depending on the method used to serve trac, we need to use
+        # a different path to initiate authentication.
         r = self.get("/login")
-        import pdb; pdb.set_trace()
+        if r.status_code != 302:
+            r = self.get("/")
 
         if r.status_code not in (200, 302):
             raise exceptions.LoginError("login failed on %s" % r.request.url)
@@ -315,14 +318,41 @@ class CartmanApp:
         print(", ".join(properties["component"]["options"]) + "\n")
 
     def run_comment(self, ticket_id):
-        """Add a comment to the given ticket_id.
+        """Add a comment to the given ticket_id. This command does not return
+        anything if successful.
 
         usage: cm comment ticket_id
 
         """
+        ticket_id = self._validate_id(ticket_id)
+
+        self.login()
+
+        # Load the initial timestamp from the ticket page
+        r = self.get("/ticket/%d" % ticket_id)
+        m = re.search(r"""name="ts" value="([^"]+)""", r.content, re.MULTILINE)
+        if m:
+            timestamp = m.group(1)
+        else:
+            raise exceptions.FatalError("unable to fetch timestamp")
+
+        # Read the comment content from the text editor
+        (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
+        os.system("$EDITOR '%s'" % filename)
+        with open(filename) as fp:
+            comment = fp.read()
+
+        r = self.post("/ticket/%d" % ticket_id, {
+            "ts": timestamp,
+            "comment": comment,
+            "action": "leave",
+        })
+
+        if "system-message" in r.content or r.status_code != 200:
+            raise exceptions.FatalError("unable to save comment")
 
     def run_new(self, owner=None):
-        """Create a new ticket.
+        """Create a new ticket and return its id if successful.
 
         usage: cm new [owner]
 
@@ -409,7 +439,7 @@ class CartmanApp:
                     raw_input("\n-- Hit Enter to return to editor, "\
                               "^C to abort --\n")
                 except KeyboardInterrupt:
-                    raise exceptions.FatalError("Ticket creation interrupted")
+                    raise exceptions.FatalError("ticket creation interrupted")
 
         r = self.post("/newticket", {
             "field_summary": headers["Subject"],
@@ -424,7 +454,6 @@ class CartmanApp:
             "field_attachment": "",
         })
 
-        import pdb; pdb.set_trace()
         if r.status_code != 200:
             raise exceptions.RequestException("unable to create new ticket.")
 
