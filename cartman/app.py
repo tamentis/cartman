@@ -20,6 +20,9 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
+MIN_SUPPORTED_VERSION = (0, 12, 0)
+MAX_SUPPORTED_VERSION = (0, 13, 0)
+
 
 class CartmanApp:
 
@@ -63,6 +66,12 @@ class CartmanApp:
 
         """
         return text.extract_properties(self.get("/query").content)
+
+    def _check_version(self):
+        if self.trac_version < MIN_SUPPORTED_VERSION \
+                or self.trac_version >= MAX_SUPPORTED_VERSION:
+            version = ".".join([str(tok) for tok in self.trac_version])
+            print("WARNING: Untested Trac version (%s)" % version)
 
     def _editor(self, filename):
         os.system("$EDITOR '%s'" % filename)
@@ -111,6 +120,10 @@ class CartmanApp:
 
         if r.status_code not in (200, 302):
             raise exceptions.LoginError("login failed on %s" % r.request.url)
+
+        # Grab the Trac version number, and throw a warning if not 0.12.
+        self.trac_version = text.extract_trac_version(r.content)
+        self._check_version()
 
         self.logged_in = True
 

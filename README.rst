@@ -95,8 +95,8 @@ TODO
    - cm fixed 1
    - cm accept 1
    - cm invalid 1
- - check Trac version
- - write a test suite
+ - improve editor handling to allow better test units
+ - sort tickets by id on ``report``.
 
 
 .. _Trac: http://trac.edgewall.org/

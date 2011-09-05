@@ -83,6 +83,7 @@ def extract_properties(raw_html):
     ticket page, such as Milestones, Versions, etc. These lists are
     extracted from the JavaScript dictionary exposed on the query page.
 
+    :param raw_html: Dump from the query page.
     """
     re_prop = r"var properties=([^;]+)"
     prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE)
@@ -91,4 +92,17 @@ def extract_properties(raw_html):
         return {}
 
     return json.loads(prop_tokens[0])
+
+def extract_trac_version(raw_html):
+    """Returns a tuple of three values representing the current Trac version.
+
+    :param raw_html: Dump from any page.
+    """
+    re_version = r"Trac (\d+\.\d+\.\d+)"
+    results = re.findall(re_version, raw_html, re.MULTILINE)
+
+    if not results:
+        return ()
+
+    return tuple([int(tok) for tok in results[0].split(".")])
 
