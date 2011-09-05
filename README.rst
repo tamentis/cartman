@@ -67,6 +67,16 @@ The first parameter to ``cm`` is the owner of the ticket, it populates the
 
     $ cm new jcarmack
 
+Commenting on a ticket
+^^^^^^^^^^^^^^^^^^^^^^
+
+Just like creating a ticket, adding a comment is just like mutt_, your current
+``$EDITOR`` will be loaded on a blank file for you to edit. Upon save and exit,
+*cartman* will commit this new comment and return silently, unless an error
+occurs::
+
+    $ cm comment 1
+
 TODO
 ----
  - create new comments
