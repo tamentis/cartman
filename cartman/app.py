@@ -7,7 +7,6 @@ import os
 import json
 import urllib
 import requests
-import difflib
 import StringIO
 import tempfile
 import webbrowser
@@ -16,6 +15,8 @@ import ConfigParser
 
 import exceptions
 import ticket
+import ui
+import text
 
 
 CONFIG_LOCATIONS = [
@@ -45,22 +46,6 @@ class CartmanApp:
         self.password = cp.get("trac", "password")
         self.required_fields = ["To", "Milestone", "Component", "Subject"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
-
-    def _underline(self, text):
-        """Given a string, return a series of dash with the same length.
-
-        :param text: Text used as reference to create a line of len(text)
-                     dashes.
-        """
-        return "-" * len(text)
-
-    def _title(self, text):
-        """Returns the same string with a line of dashes of the same size.
-
-        :param text: Text to return underlined.
-        """
-
-        return text + "\n" + self._underline(text)
 
     def _get_form_token(self):
         """Return the form_token sent on all the POST forms for validation.
@@ -93,46 +78,6 @@ class CartmanApp:
         )
 
         return json.loads(line)
-
-    def _fuzzy_find(self, value, options):
-        """Given a value and a list of options, find the one option that should
-        be the closest match. We first use Python's ``difflib`` to find
-        potential typos in exact matches, then we do a word-match using regular
-        expressions.
-
-        :param value: User-entered words.
-        :param options: List of real, system understood values.
-
-        """
-        value = value.lower()
-        options = {opt.lower(): opt for opt in options}
-
-        matches = difflib.get_close_matches(value, options.keys())
-
-        if not matches:
-            for l_opt, opt in options.items():
-                pattern = r".*\b%s\b.*" % value
-                if re.match(pattern, l_opt):
-                    matches.append(l_opt)
-
-        if len(matches) == 1:
-            return options[matches.pop()]
-
-        return None
-
-    def _validate_id(self, raw_value):
-        """Ensures the given raw string is an int and returns it converted.
-
-        :param raw_value: Entity id as a string or int.
-
-        """
-        try:
-            converted_id = int(raw_value)
-        except ValueError:
-            raise exceptions.InvalidParameter(
-                    "invalid identifier (should be an int)")
-
-        return converted_id
 
     def get(self, query_string, data=None):
         """Generates a GET query on the target Trac system.
@@ -201,14 +146,22 @@ class CartmanApp:
         for ticket_dict in self.get_dicts(query_string):
             yield ticket.factory(ticket_dict)
 
+    def print_function_help(self, attrname):
+        """Print the docstring for one function.
+
+        :param attrname: Name of the function, with the run_ prefix.
+
+        """
+        func_name = attrname[4:]
+        print(ui.title(func_name))
+        print(getattr(self, attrname).__doc__)
+
     # TODO fix indent on doc strings..
     def print_commands(self):
         """Initial attempt to return a help screen with all the commands."""
         for attrname in dir(self):
             if attrname.startswith("run_"):
-                func_name = attrname[4:]
-                print(self._title(func_name))
-                print(getattr(self, attrname).__doc__)
+                self.print_function_help(func_name)
                 print("")
 
     def open_in_browser(self, ticket_id):
@@ -259,7 +212,11 @@ class CartmanApp:
 
         func_name = "run_" + command
         if hasattr(self, func_name):
-            getattr(self, func_name)(*args)
+            try:
+                getattr(self, func_name)(*args)
+            except TypeError:
+                print("Invalid usage:\n")
+                self.print_function_help(func_name)
         else:
             raise exceptions.UnknownCommand("Unknown command: " + command)
 
@@ -269,7 +226,7 @@ class CartmanApp:
         usage: cm report ticket_id
 
         """
-        report_id = self._validate_id(report_id)
+        report_id = text.validate_id(report_id)
 
         query_string = "/report/%d?format=tab" % report_id
 
@@ -282,14 +239,14 @@ class CartmanApp:
         usage: cm view ticket_id
 
         """
-        ticket_id = self._validate_id(ticket_id)
+        ticket_id = text.validate_id(ticket_id)
 
         query_string = "/ticket/%d?format=tab" % ticket_id
 
         t = self.get_tickets(query_string).next()
         title = t.format_title()
 
-        print(self._title(title))
+        print(ui.title(title))
         print("")
 
         print(t.description)
@@ -299,7 +256,7 @@ class CartmanApp:
 
         usage: cm open ticket_id
         """
-        ticket_id = self._validate_id(ticket_id)
+        ticket_id = text.validate_id(ticket_id)
 
         self.open_in_browser(ticket_id)
 
@@ -311,10 +268,10 @@ class CartmanApp:
         """
         properties = self._get_properties()
 
-        print(self._title("Milestones"))
+        print(ui.title("Milestones"))
         print(", ".join(properties["milestone"]["options"]) + "\n")
 
-        print(self._title("Components"))
+        print(ui.title("Components"))
         print(", ".join(properties["component"]["options"]) + "\n")
 
     def run_comment(self, ticket_id):
@@ -324,7 +281,7 @@ class CartmanApp:
         usage: cm comment ticket_id
 
         """
-        ticket_id = self._validate_id(ticket_id)
+        ticket_id = text.validate_id(ticket_id)
 
         self.login()
 
@@ -419,7 +376,7 @@ class CartmanApp:
                 valid_options = properties[key.lower()]["options"]
 
                 if headers[key] not in valid_options:
-                    m = self._fuzzy_find(headers[key], valid_options)
+                    m = text.fuzzy_find(headers[key], valid_options)
                     if m:
                         headers[key] = m
                     else:
