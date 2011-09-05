@@ -48,7 +48,7 @@ class CartmanApp:
 
     def _underline(self, text):
         """Given a string, return a series of dash with the same length.
-        
+
         :param text: Text used as reference to create a line of len(text)
                      dashes.
         """
@@ -120,6 +120,20 @@ class CartmanApp:
 
         return None
 
+    def _validate_id(self, raw_value):
+        """Ensures the given raw string is an int and returns it converted.
+
+        :param raw_value: Entity id as a string or int.
+
+        """
+        try:
+            converted_id = int(raw_value)
+        except ValueError:
+            raise exceptions.InvalidParameter(
+                    "invalid identifier (should be an int)")
+
+        return converted_id
+
     def get(self, query_string, data=None):
         """Generates a GET query on the target Trac system.
 
@@ -146,17 +160,20 @@ class CartmanApp:
 
     def login(self):
         """Ensure the current session is logged-in, accessing the main page.
-        This will allow Trac to generate the cookies that will be store on our
+        This will allow Trac to generate the cookies that will be stored on our
         ``self.session`` object.
 
         """
         if self.logged_in:
             return
 
-        r = self.get("/")
+        r = self.get("/login")
+        import pdb; pdb.set_trace()
 
         if r.status_code not in (200, 302):
-            raise exceptions.LoginError("login failed")
+            raise exceptions.LoginError("login failed on %s" % r.request.url)
+
+        self.logged_in = True
 
     def get_dicts(self, query_string):
         """Wrapper around the ``get`` method that ensures we are logged-in and
@@ -249,10 +266,7 @@ class CartmanApp:
         usage: cm report ticket_id
 
         """
-        try:
-            report_id = int(report_id)
-        except ValueError:
-            raise exceptions.InvalidParameter("report_id should be an integer")
+        report_id = self._validate_id(report_id)
 
         query_string = "/report/%d?format=tab" % report_id
 
@@ -265,10 +279,7 @@ class CartmanApp:
         usage: cm view ticket_id
 
         """
-        try:
-            ticket_id = int(ticket_id)
-        except ValueError:
-            raise exceptions.InvalidParameter("ticket_id should be an integer")
+        ticket_id = self._validate_id(ticket_id)
 
         query_string = "/ticket/%d?format=tab" % ticket_id
 
@@ -285,10 +296,7 @@ class CartmanApp:
 
         usage: cm open ticket_id
         """
-        try:
-            ticket_id = int(ticket_id)
-        except ValueError:
-            raise exceptions.InvalidParameter("ticket_id should be an integer")
+        ticket_id = self._validate_id(ticket_id)
 
         self.open_in_browser(ticket_id)
 
@@ -306,6 +314,12 @@ class CartmanApp:
         print(self._title("Components"))
         print(", ".join(properties["component"]["options"]) + "\n")
 
+    def run_comment(self, ticket_id):
+        """Add a comment to the given ticket_id.
+
+        usage: cm comment ticket_id
+
+        """
 
     def run_new(self, owner=None):
         """Create a new ticket.
@@ -314,7 +328,9 @@ class CartmanApp:
 
         """
         owner = owner or self.username
+
         self.login()
+
         valid = False
         headers = {
             "Subject": "",
@@ -329,9 +345,11 @@ class CartmanApp:
         }
         body = "\n"
 
-        properties = self._get_properties()
-
         while not valid:
+            # Get the properties at each iteration, in case an admin updated
+            # the list in the mean time, especially because of this new ticket.
+            properties = self._get_properties()
+
             # Assume the user will produce a valid ticket
             valid = True
 
@@ -355,14 +373,18 @@ class CartmanApp:
             headers.update(em)
 
             errors = []
-            fuzzy_match_fields = ("Milestone", "Component", "Type", "Version")
+            fuzzy_match_fields = ("Milestone", "Component", "Type", "Version",
+                                  "Priority")
 
+            # Ensures all the required fields are filled-in
             for key in self.required_fields:
                 if key in fuzzy_match_fields:
                     continue
                 if not headers[key] or "**ERROR**" in headers[key]:
                     errors.append("Invalid '%s': cannot be blank" % key)
 
+            # Some fields are tolerant to incomplete values, this is where we
+            # try to complete them.
             for key in fuzzy_match_fields:
                 valid_options = properties[key.lower()]["options"]
 
@@ -384,7 +406,8 @@ class CartmanApp:
                     print(" - %s" % error)
 
                 try:
-                    raw_input("\n-- Hit Enter to return to editor, ^C to abort --\n")
+                    raw_input("\n-- Hit Enter to return to editor, "\
+                              "^C to abort --\n")
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("Ticket creation interrupted")
 
@@ -401,6 +424,7 @@ class CartmanApp:
             "field_attachment": "",
         })
 
+        import pdb; pdb.set_trace()
         if r.status_code != 200:
             raise exceptions.RequestException("unable to create new ticket.")
 
