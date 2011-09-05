@@ -209,7 +209,7 @@ class CartmanApp:
         """
         self.open_after = args.open_after
         self.add_comment = args.add_comment
-        self.comment = args.comment
+        self.message = args.comment
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
@@ -320,8 +320,8 @@ class CartmanApp:
         r = self.get("/ticket/%d" % ticket_id)
         timestamp = text.extract_timestamp(r.content)
 
-        if self.comment:
-            comment = self.comment
+        if self.message:
+            comment = self.message
         else:
             comment = self._read_comment()
 
@@ -354,8 +354,8 @@ class CartmanApp:
             raise exceptions.FatalError("bad status (for this ticket: %s)" % \
                                         ", ".join(statuses))
 
-        if self.comment:
-            comment = self.comment
+        if self.message:
+            comment = self.message
         elif self.add_comment:
             comment = self._read_comment()
         else:

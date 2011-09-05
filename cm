@@ -18,8 +18,8 @@ def main():
                         help="specific for each commands")
     parser.add_argument("-c", dest="add_comment", action="store_true",
                         help="add a comment via the editor (status)")
-    parser.add_argument("-m", dest="comment", action="store",
-                        help="comment to be added (status, comment)")
+    parser.add_argument("-m", dest="message", action="store",
+                        help="comment/message to be added (status, comment)")
     parser.add_argument("-s", dest="stdin_id", action="store_true",
                         help="grab ticket_id from stdin")
     parser.add_argument("-a", dest="open_after", action="store_true",

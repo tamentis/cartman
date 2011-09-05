@@ -103,7 +103,6 @@ TODO
 ----
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
- - allow comment when setting a status
  - view status (and available ones for the given ticket)
  - pull the report name for the ``report`` command.
  - create a few shortcuts:
