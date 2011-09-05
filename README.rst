@@ -77,11 +77,24 @@ occurs::
 
     $ cm comment 1
 
+Setting the status of a ticket
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Set a ticket as accepted::
+
+    $ cp status 1 accept
+
 TODO
 ----
- - find a way to read comments
- - set/view status (with optional comment)
+ - find a way to read comments (tricky because there is nothing that dumps the
+   comments in their raw format in the default Trac installation).
+ - allow comment when setting a status
+ - view status (and available ones for the given ticket)
  - pull the report name for the ``report`` command.
+ - create a few shortcuts:
+   - cm fixed 1
+   - cm accept 1
+   - cm invalid 1
 
 
 .. _Trac: http://trac.edgewall.org/

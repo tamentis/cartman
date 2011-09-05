@@ -49,3 +49,28 @@ def validate_id(raw_value):
 
     return converted_id
 
+def extract_timestamp(raw_html):
+    """Given a dump of HTML data, extract the timestamp and return it as a
+    string value.
+
+    :param raw_html: Dump from the ticket page.
+
+    """
+    m = re.search(r"""name="ts" value="([^"]+)""", raw_html, re.MULTILINE)
+    if m:
+        timestamp = m.group(1)
+    else:
+        raise exceptions.FatalError("unable to fetch timestamp")
+
+    return timestamp
+
+def extract_statuses(raw_html):
+    """Given a dump of HTML data, extract the timestamp and return it as a
+    string value.
+
+    :param raw_html: Dump from the ticket page.
+
+    """
+    re_status = r'<input type="radio" [^<]+ name="action" value="([^"]+)'
+    return re.findall(re_status, raw_html)
+

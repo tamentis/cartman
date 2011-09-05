@@ -210,11 +210,7 @@ class CartmanApp:
 
         func_name = "run_" + command
         if hasattr(self, func_name):
-            try:
-                getattr(self, func_name)(*args)
-            except TypeError:
-                print("Invalid usage:\n")
-                self.print_function_help(func_name)
+            getattr(self, func_name)(*args)
         else:
             raise exceptions.UnknownCommand("Unknown command: " + command)
 
@@ -272,6 +268,9 @@ class CartmanApp:
         print(ui.title("Components"))
         print(", ".join(properties["component"]["options"]) + "\n")
 
+        print(ui.title("Status"))
+        print(", ".join(properties["status"]["options"]) + "\n")
+
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
         anything if successful.
@@ -285,11 +284,7 @@ class CartmanApp:
 
         # Load the initial timestamp from the ticket page
         r = self.get("/ticket/%d" % ticket_id)
-        m = re.search(r"""name="ts" value="([^"]+)""", r.content, re.MULTILINE)
-        if m:
-            timestamp = m.group(1)
-        else:
-            raise exceptions.FatalError("unable to fetch timestamp")
+        timestamp = text.extract_timestamp(r.content)
 
         # Read the comment content from the text editor
         (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
@@ -305,6 +300,34 @@ class CartmanApp:
 
         if "system-message" in r.content or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
+
+    def run_status(self, ticket_id, status):
+        """Updates the status of a ticket.
+
+        usage: cm status ticket_id new_status
+
+        """
+        ticket_id = text.validate_id(ticket_id)
+
+        self.login()
+
+        # Get all the available actions for this ticket
+        r = self.get("/ticket/%d" % ticket_id)
+        timestamp = text.extract_timestamp(r.content)
+        statuses = text.extract_statuses(r.content)
+        status = text.fuzzy_find(status, statuses)
+
+        if not status:
+            raise exceptions.FatalError("bad status (for this ticket: %s)" % \
+                                        ", ".join(statuses))
+
+        r = self.post("/ticket/%d" % ticket_id, {
+            "ts": timestamp,
+            "action": status,
+        })
+
+        if "system-message" in r.content or r.status_code != 200:
+            raise exceptions.FatalError("unable to set status")
 
     def run_new(self, owner=None):
         """Create a new ticket and return its id if successful.
