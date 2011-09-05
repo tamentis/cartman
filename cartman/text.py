@@ -3,6 +3,7 @@ Various text processing functions.
 """
 
 import re
+import json
 import difflib
 
 import exceptions
@@ -20,6 +21,9 @@ def fuzzy_find(value, options):
     """
     value = value.lower()
     options = {opt.lower(): opt for opt in options}
+
+    if value in options.keys():
+        return options[value]
 
     matches = difflib.get_close_matches(value, options.keys())
 
@@ -73,4 +77,18 @@ def extract_statuses(raw_html):
     """
     re_status = r'<input type="radio" [^<]+ name="action" value="([^"]+)'
     return re.findall(re_status, raw_html)
+
+def extract_properties(raw_html):
+    """Return all the values typically used in drop-downs on the create
+    ticket page, such as Milestones, Versions, etc. These lists are
+    extracted from the JavaScript dictionary exposed on the query page.
+
+    """
+    re_prop = r"var properties=([^;]+)"
+    prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE)
+
+    if len(prop_tokens) < 1:
+        return {}
+
+    return json.loads(prop_tokens[0])
 

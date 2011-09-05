@@ -2,7 +2,6 @@
 
 import csv
 import os
-import json
 import requests
 import StringIO
 import tempfile
@@ -33,14 +32,15 @@ class CartmanApp:
         self._read_config()
         self.session = requests.session(auth=(self.username, self.password))
         self.logged_in = False
+        self.browser = webbrowser
 
     def _read_config(self):
         cp = ConfigParser.ConfigParser()
         cp.read(CONFIG_LOCATIONS)
 
-        self.base_url = cp.get("trac", "base_url")
-        self.username = cp.get("trac", "username")
-        self.password = cp.get("trac", "password")
+        self.base_url = cp.get("trac", "base_url", "localhost")
+        self.username = cp.get("trac", "username", "cartman")
+        self.password = cp.get("trac", "password", "cartman")
         self.required_fields = ["To", "Milestone", "Component", "Subject"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
@@ -62,19 +62,13 @@ class CartmanApp:
         extracted from the JavaScript dictionary exposed on the query page.
 
         """
-        token = "var properties="
-        lines = [l for l in self.get("/query").content.splitlines() if token in l]
+        return text.extract_properties(self.get("/query").content)
 
-        if not lines:
-            return {}
+    def _editor(self, filename):
+        os.system("$EDITOR '%s'" % filename)
 
-        line = (
-            lines.pop()
-                 .replace(token, "")
-                 .replace(";","")
-        )
-
-        return json.loads(line)
+    def _input(self, prompt):
+        return raw_input(prompt)
 
     def get(self, query_string, data=None):
         """Generates a GET query on the target Trac system.
@@ -167,7 +161,7 @@ class CartmanApp:
         :param ticket_id: id of the ticket to open in browser.
 
         """
-        webbrowser.open(self.base_url + "/ticket/%d" % ticket_id)
+        self.browser.open(self.base_url + "/ticket/%d" % ticket_id)
 
     def open_in_browser_on_request(self, ticket_id):
         """Open the default web browser on the ticket page, only if
@@ -304,7 +298,7 @@ class CartmanApp:
 
         # Read the comment content from the text editor
         (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
-        os.system("$EDITOR '%s'" % filename)
+        self._editor(filename)
         with open(filename) as fp:
             comment = fp.read()
 
@@ -384,7 +378,7 @@ class CartmanApp:
             fp.write("\n\n")
             fp.write(body)
             fp.close()
-            os.system("$EDITOR '%s'" % filename)
+            self._editor(filename)
 
             # Use the email parser to get the headers.
             ep = email.parser.Parser()
@@ -430,7 +424,7 @@ class CartmanApp:
                     print(" - %s" % error)
 
                 try:
-                    raw_input("\n-- Hit Enter to return to editor, "\
+                    self._input("\n-- Hit Enter to return to editor, "\
                               "^C to abort --\n")
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("ticket creation interrupted")

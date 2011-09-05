@@ -16,6 +16,8 @@ def title(text):
 
     :param text: Text to return underlined.
     """
+    if not text:
+        return ""
 
     return text + "\n" + underline(text)
 

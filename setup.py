@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-from curfuel import __version__
+from cartman import __version__
 
 setup(
     name="cartman",
@@ -30,5 +30,9 @@ setup(
     ],
     install_requires=[
         "requests>=0.6.0",
-    ]
+    ],
+    setup_requires=[
+        "nose>=1.0",
+        "coverage>=3.5",
+    ],
 )

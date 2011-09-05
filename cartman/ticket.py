@@ -1,6 +1,6 @@
 
 class Ticket:
-    
+
     def __init__(self):
         self.id = 0
         self.summary = "Summary N/A"
@@ -11,7 +11,7 @@ class Ticket:
         return "#%d." % self.id
 
     def format_title(self):
-        return "%(id_fmt)s %(summary)s (%(reporter)s@)" % {
+        return "%(id_fmt)s %(summary)s (%(reporter)s)" % {
             "id_fmt": self.format_id(),
             "summary": self.summary,
             "reporter": self.reporter,
