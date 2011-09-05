@@ -43,7 +43,7 @@ def validate_id(raw_value):
     """
     try:
         converted_id = int(raw_value)
-    except ValueError:
+    except (ValueError, TypeError):
         raise exceptions.InvalidParameter(
                 "invalid identifier (should be an int)")
 

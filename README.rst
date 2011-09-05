@@ -95,6 +95,8 @@ TODO
    - cm fixed 1
    - cm accept 1
    - cm invalid 1
+ - check Trac version
+ - write a test suite
 
 
 .. _Trac: http://trac.edgewall.org/

@@ -205,8 +205,7 @@ class CartmanApp:
         func_name = "run_" + args.command
         if hasattr(self, func_name):
             func = getattr(self, func_name)
-            argcount = func.im_func.func_code.co_argcount - 1
-            if argcount != len(args.parameters) or "help" in args.parameters:
+            if "help" in args.parameters:
                 self.print_function_help(func_name)
                 return
 
@@ -219,7 +218,7 @@ class CartmanApp:
         else:
             raise exceptions.UnknownCommand("unknown command: " + args.command)
 
-    def run_help(self, command):
+    def run_help(self, command="help"):
         """Show the help for a given command.
 
         usage: cm help command
@@ -231,7 +230,7 @@ class CartmanApp:
         else:
             raise exceptions.UnknownCommand("unknown command: " + func_name)
 
-    def run_report(self, report_id):
+    def run_report(self, report_id=None):
         """List tickets from a given report number.
 
         usage: cm report ticket_id
