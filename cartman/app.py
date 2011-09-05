@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import csv
-import re
 import os
 import json
 import requests
@@ -193,7 +192,7 @@ class CartmanApp:
         pairs = sorted(pairs, key=lambda pair: sort_ref.index(pair[0]))
         return "\n".join([": ".join(pair) for pair in pairs])
 
-    def run(self, options, args):
+    def run(self, args):
         """Main function called, convert the options and arguments into a
         function call within this instance.
 
@@ -201,18 +200,36 @@ class CartmanApp:
         :param args: Arguments returned from the optparse module.
 
         """
-        self.open_after = options.open_after
+        self.open_after = args.open_after
 
-        if args:
-            command = args.pop(0)
+        func_name = "run_" + args.command
+        if hasattr(self, func_name):
+            func = getattr(self, func_name)
+            argcount = func.im_func.func_code.co_argcount - 1
+            if argcount != len(args.parameters) or "help" in args.parameters:
+                self.print_function_help(func_name)
+                return
+
+            try:
+                func(*args.parameters)
+            except exceptions.InvalidParameter, ex:
+                print("error: %s\n" % ex)
+                self.print_function_help(func_name)
+                return
         else:
-            command = "default"
+            raise exceptions.UnknownCommand("unknown command: " + args.command)
 
+    def run_help(self, command):
+        """Show the help for a given command.
+
+        usage: cm help command
+
+        """
         func_name = "run_" + command
         if hasattr(self, func_name):
-            getattr(self, func_name)(*args)
+            self.print_function_help(func_name)
         else:
-            raise exceptions.UnknownCommand("Unknown command: " + command)
+            raise exceptions.UnknownCommand("unknown command: " + func_name)
 
     def run_report(self, report_id):
         """List tickets from a given report number.
