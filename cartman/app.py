@@ -209,7 +209,7 @@ class CartmanApp:
         """
         self.open_after = args.open_after
         self.add_comment = args.add_comment
-        self.message = args.comment
+        self.message = args.message
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
