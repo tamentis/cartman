@@ -111,6 +111,8 @@ TODO
    - cm invalid 1
  - improve editor handling to allow better test units
  - sort tickets by id on ``report``.
+ - add query support, allowing them to be defined in the config file.
+ - add multi configuration with [DEFAULT] (to have multiple sites).
 
 
 .. _Trac: http://trac.edgewall.org/
