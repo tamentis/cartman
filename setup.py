@@ -12,6 +12,7 @@ setup(
     author_email="tamentis@neopulsar.org",
     url="http://github.com/tamentis/tracman/",
     scripts=["cm"],
+    packages=["cartman"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
