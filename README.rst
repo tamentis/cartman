@@ -24,6 +24,20 @@ email-like syntax highlighting to match the ``.cm.ticket`` extension::
 
     autocmd BufNewFile *.cm.ticket setf mail
 
+If you use multiple Trac sites, you can have multiple configurations in the
+same file using the section to separate the sites, here is an example::
+
+    [other]
+    base_url = http://other.trac.site/
+    username = tamentis
+    password = sitnemat
+
+You would pass the ``-s`` parameter to ``cm`` to define which site to access::
+
+    cm -s other report 1
+
+You may define all common configuration settings in the ``[DEFAULT]`` section.
+
 Walkthrough
 -----------
 
@@ -112,7 +126,6 @@ TODO
  - improve editor handling to allow better test units
  - sort tickets by id on ``report``.
  - add query support, allowing them to be defined in the config file.
- - add multi configuration with [DEFAULT] (to have multiple sites).
 
 
 .. _Trac: http://trac.edgewall.org/

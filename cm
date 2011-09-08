@@ -20,10 +20,12 @@ def main():
                         help="add a comment via the editor (status)")
     parser.add_argument("-m", dest="message", action="store",
                         help="comment/message to be added (status, comment)")
-    parser.add_argument("-s", dest="stdin_id", action="store_true",
+    parser.add_argument("-i", dest="stdin_id", action="store_true",
                         help="grab ticket_id from stdin")
     parser.add_argument("-a", dest="open_after", action="store_true",
                         help="open ticket in browser after command")
+    parser.add_argument("-s", dest="site", action="store",
+                        help="what site to use (default: trac)")
     args = parser.parse_args()
 
     # Try to grab the ticket id from stdin, if successful, slap the value as an

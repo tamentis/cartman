@@ -32,8 +32,7 @@ class CartmanApp:
     """
 
     def __init__(self):
-        self._read_config()
-        self.session = requests.session(auth=(self.username, self.password))
+        self.site = "trac"
         self.logged_in = False
         self.browser = webbrowser
 
@@ -41,9 +40,9 @@ class CartmanApp:
         cp = ConfigParser.ConfigParser()
         cp.read(CONFIG_LOCATIONS)
 
-        self.base_url = cp.get("trac", "base_url", "localhost")
-        self.username = cp.get("trac", "username", "cartman")
-        self.password = cp.get("trac", "password", "cartman")
+        self.base_url = cp.get(self.site, "base_url", "localhost")
+        self.username = cp.get(self.site, "username", "cartman")
+        self.password = cp.get(self.site, "password", "cartman")
         self.required_fields = ["To", "Milestone", "Component", "Subject"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
@@ -207,9 +206,13 @@ class CartmanApp:
         :param args: Arguments returned from the optparse module.
 
         """
+        self.site = args.site or self.site
         self.open_after = args.open_after
         self.add_comment = args.add_comment
         self.message = args.message
+
+        self._read_config()
+        self.session = requests.session(auth=(self.username, self.password))
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
