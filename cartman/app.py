@@ -20,8 +20,8 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
-MIN_SUPPORTED_VERSION = (0, 12, 0)
-MAX_SUPPORTED_VERSION = (0, 13, 0)
+MIN_TRAC_VERSION = (0, 12, 0)
+MAX_TRAC_VERSION = (0, 13, 0)
 
 
 class CartmanApp:
@@ -68,8 +68,8 @@ class CartmanApp:
         return text.extract_properties(self.get("/query").content)
 
     def _check_version(self):
-        if self.trac_version < MIN_SUPPORTED_VERSION \
-                or self.trac_version >= MAX_SUPPORTED_VERSION:
+        if self.trac_version < MIN_TRAC_VERSION \
+                or self.trac_version >= MAX_TRAC_VERSION:
             version = ".".join([str(tok) for tok in self.trac_version])
             print("WARNING: Untested Trac version (%s)" % version)
 
