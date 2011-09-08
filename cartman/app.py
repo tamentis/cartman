@@ -43,7 +43,8 @@ class CartmanApp:
         self.base_url = cp.get(self.site, "base_url", "localhost")
         self.username = cp.get(self.site, "username", "cartman")
         self.password = cp.get(self.site, "password", "cartman")
-        self.required_fields = ["To", "Milestone", "Component", "Subject"]
+        self.required_fields = ["To", "Milestone", "Component", "Subject",
+                "Priority"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
     def _get_form_token(self):
