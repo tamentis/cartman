@@ -50,6 +50,13 @@ Dump a list of tickets on screen, without details::
     #142. fix world hunger (bjanin@)
     #159. ignore unpaid rent (bjanin@)
 
+Ticket View
+^^^^^^^^^^^
+
+Show all the properties of a ticket::
+
+    $ cm view 1
+
 System Properties
 ^^^^^^^^^^^^^^^^^
 
@@ -127,7 +134,6 @@ TODO
    - cm accept 1
    - cm invalid 1
  - improve editor handling to allow better test units
- - sort tickets by id on ``report``.
  - add query support, allowing them to be defined in the config file.
 
 

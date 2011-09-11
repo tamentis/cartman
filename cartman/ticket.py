@@ -13,13 +13,43 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+# This dictionary is used to translate different properties from the tab
+# delimited files to instance properties.
+TRANSLATIONS = {
+    "component": "component",
+    "description": "description",
+    "id": "id",
+    "milestone": "milestone",
+    "owner": "owner",
+    "reporter": "reporter",
+    "_reporter": "reporter",
+    "resolution": "resolution",
+    "status": "status",
+    "summary": "summary",
+    "ticket": "id",
+    "type": "type",
+    "version": "version",
+}
+
+# Any of these types will need casting.
+TYPES = {
+    "id": int,
+}
+
+
 class Ticket:
 
     def __init__(self):
         self.id = 0
-        self.summary = "Summary N/A"
-        self.reporter = "Reporter N/A"
-        self.description = "Description N/A"
+        self.type = "N/A"
+        self.summary = "N/A"
+        self.reporter = "N/A"
+        self.description = "N/A"
+        self.milestone = "N/A"
+        self.status = "unknown"
+        self.owner = "unknown"
+        self.resolution = ""
+        self.version = ""
 
     def format_id(self):
         return "#%d." % self.id
@@ -31,24 +61,22 @@ class Ticket:
             "reporter": self.reporter,
         }
 
-
 def factory(ticket_dict):
+    """Create a new ticket and copy the properties from a dictionary, with a
+    few rules regarding translation and type casting.
+
+    :param ticket_dict: Dictionary as returned from the Trac system, typically
+                        translated from a tab-delimited format by cartman.
+    """
     ticket = Ticket()
 
-    if "id" in ticket_dict:
-        ticket.id = int(ticket_dict["id"])
-    elif "ticket" in ticket_dict:
-        ticket.id = int(ticket_dict["ticket"])
+    for src_name, dest_name in TRANSLATIONS.items():
+        if src_name in ticket_dict:
+            if dest_name in TYPES and TYPES[dest_name] == int:
+                value = int(ticket_dict[src_name])
+            else:
+                value = ticket_dict[src_name]
 
-    if "summary" in ticket_dict:
-        ticket.summary = ticket_dict["summary"]
-
-    if "_reporter" in ticket_dict:
-        ticket.reporter = ticket_dict["_reporter"]
-    elif "reporter" in ticket_dict:
-        ticket.reporter = ticket_dict["reporter"]
-
-    if "description" in ticket_dict:
-        ticket.description = ticket_dict["description"]
+            setattr(ticket, dest_name, value)
 
     return ticket
