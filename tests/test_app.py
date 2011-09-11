@@ -1,6 +1,6 @@
 import unittest
 
-from cartman import app
+from cartman import app, exceptions
 
 
 class DummyBrowser:
@@ -55,6 +55,9 @@ class DummyArgs:
         self.command = command
         self.open_after = False
         self.parameters = parameters
+        self.site = "trac"
+        self.add_comment = False
+        self.message = None
 
 
 class AppUnitTest(unittest.TestCase):
@@ -111,12 +114,23 @@ class AppUnitTest(unittest.TestCase):
 
     def test_run_comment(self):
         args = DummyArgs("comment", ["1"])
+        args.message = "brilliant!"
         self.app.set_responses([
             (200, """<input name="ts" value="1" />"""), # time stamp
             (200, ""), # post
         ])
 
         self.app.run(args)
+
+    def test_run_comment_no_message(self):
+        args = DummyArgs("comment", ["1"])
+        args.message = ""
+        self.app.set_responses([
+            (200, """<input name="ts" value="1" />"""), # time stamp
+            (200, ""), # post
+        ])
+
+        self.assertRaises(exceptions.FatalError, self.app.run, args)
 
     def test_run_status(self):
         args = DummyArgs("status", ["1", "reopen"])
@@ -129,6 +143,22 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+
+    def test_run_status(self):
+        args = DummyArgs("status", ["1"])
+        self.app.set_responses([
+            (200, """hemene, hemene <label>leave</label>
+            as stuffy
+            </input>
+            <input name="ts" value="1" />
+                     <input type="radio" stuff name="action" value="reopen" />
+                     <input type="radio" stuff name="action" value="close" />
+                     """),
+            (200, ""), # post
+        ])
+
+        self.app.run(args)
+        # TODO: test return...
 
     def test_run_new(self):
         self.skipTest("too many filesystem interraction, code need restruct.")

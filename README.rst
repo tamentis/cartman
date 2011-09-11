@@ -96,8 +96,12 @@ If the comment is short enough to fit on the command line, you may use the
 
     $ cm comment 1 -m "you forgot to call twiddle()"
 
-Setting the status of a ticket
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+View/Set the status of a ticket
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+View the current status of a ticket, and the available statuses::
+
+    $ cm status 1
 
 Set a ticket as accepted::
 
@@ -117,7 +121,6 @@ TODO
 ----
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
- - view status (and available ones for the given ticket)
  - pull the report name for the ``report`` command.
  - create a few shortcuts:
    - cm fixed 1

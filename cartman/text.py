@@ -92,6 +92,24 @@ def extract_statuses(raw_html):
     re_status = r'<input type="radio" [^<]+ name="action" value="([^"]+)'
     return re.findall(re_status, raw_html)
 
+def extract_status_from_ticket_page(raw_html):
+    """Given a dump of the HTML ticket page, extract the current status of
+    a ticket.
+
+    :param raw_html: Dump for the ticket page.
+
+    """
+    re_status = r'leave</label>[\s\n]*as (\w+)[\s\n]*<'
+
+    m = re.search(re_status, raw_html, re.MULTILINE)
+
+    if m:
+        status = m.group(1)
+    else:
+        raise exceptions.FatalError("unable to fetch ticket status")
+
+    return status
+
 def extract_properties(raw_html):
     """Return all the values typically used in drop-downs on the create
     ticket page, such as Milestones, Versions, etc. These lists are

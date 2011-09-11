@@ -354,10 +354,10 @@ class CartmanApp:
         if "system-message" in r.content or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
 
-    def run_status(self, ticket_id, status):
+    def run_status(self, ticket_id, status=None):
         """Updates the status of a ticket.
 
-        usage: cm status ticket_id new_status
+        usage: cm status ticket_id [new_status]
 
         """
         ticket_id = text.validate_id(ticket_id)
@@ -368,11 +368,20 @@ class CartmanApp:
         r = self.get("/ticket/%d" % ticket_id)
         timestamp = text.extract_timestamp(r.content)
         statuses = text.extract_statuses(r.content)
-        status = text.fuzzy_find(status, statuses)
 
-        if not status:
-            raise exceptions.FatalError("bad status (for this ticket: %s)" % \
+        # A ``status`` was provided, try to find the exact match, else just
+        # display the current status for this ticket, and the available ones.
+        if status:
+            status = text.fuzzy_find(status, statuses)
+
+            if not status:
+                raise exceptions.FatalError("bad status (for this ticket: %s)" % \
                                         ", ".join(statuses))
+        else:
+            status = text.extract_status_from_ticket_page(r.content)
+            print("Current status: %s" % status)
+            print("Available statuses: %s" % ", ".join(statuses))
+            return
 
         if self.message:
             comment = self.message
