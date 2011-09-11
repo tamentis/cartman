@@ -57,6 +57,13 @@ Show all the properties of a ticket::
 
     $ cm view 1
 
+List of Reports
+^^^^^^^^^^^^^^^
+
+Get a list of all the available reports with::
+
+    $ cm reports
+
 System Properties
 ^^^^^^^^^^^^^^^^^
 
@@ -128,7 +135,6 @@ TODO
 ----
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
- - pull the report name for the ``report`` command.
  - create a few shortcuts:
    - cm fixed 1
    - cm accept 1

@@ -265,8 +265,17 @@ class CartmanApp:
 
         query_string = "/report/%d?format=tab" % report_id
 
-        for t in sorted(self.get_tickets(query_string), key=lambda t: t.id):
+        for t in self.get_tickets(query_string):
             print(t.format_title())
+
+    def run_reports(self):
+        """List reports available in the system.
+
+        usage: cm reports
+
+        """
+        for d in self.get_dicts("/report?format=tab"):
+            print("#%(report)s. %(title)s" % d)
 
     def run_view(self, ticket_id):
         """Display a ticket summary.
@@ -282,18 +291,6 @@ class CartmanApp:
         title = t.format_title()
 
         print(ui.title(title))
-        if t.component:
-            print("Component: %s" % t.component)
-        if t.version:
-            print("Version: %s" % t.version)
-        print("Type: %s" % t.type)
-        if t.milestone:
-            print("Milestone: %s" % t.milestone)
-        print("Status: %s" % t.status)
-        if t.resolution:
-            print("Resolution: %s" % t.resolution)
-        if t.owner:
-            print("Owner: %s" % t.owner)
         print("")
 
         print(t.description)
