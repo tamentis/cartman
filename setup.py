@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 
+import os.path
 from distutils.core import setup
 
 from cartman import __version__
+
+here = os.path.abspath(os.path.dirname(__file__))
+try:
+    README = open(os.path.join(here, 'README.rst')).read()
+    CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+except IOError:
+    README = CHANGES = ''
 
 setup(
     name="cartman",
     version=__version__,
     description="trac command-line tools",
+    long_description=README + "\n\n" + CHANGES,
     author="Bertrand Janin",
     author_email="tamentis@neopulsar.org",
     url="http://github.com/tamentis/tracman/",

@@ -141,6 +141,7 @@ TODO
    - cm invalid 1
  - improve editor handling to allow better test units
  - add query support, allowing them to be defined in the config file.
+ - add curses support to navigate tickets easily.
 
 
 .. _Trac: http://trac.edgewall.org/
