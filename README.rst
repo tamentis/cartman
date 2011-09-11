@@ -126,7 +126,6 @@ TODO
  - improve editor handling to allow better test units
  - sort tickets by id on ``report``.
  - add query support, allowing them to be defined in the config file.
- - cancel submission for new and comment if the file hasn't changed.
 
 
 .. _Trac: http://trac.edgewall.org/

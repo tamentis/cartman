@@ -323,7 +323,8 @@ class CartmanApp:
 
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
-        anything if successful.
+        anything if successful. Command is cancelled if the content of the
+        comment is empty.
 
         usage: cm comment ticket_id
 
@@ -340,6 +341,9 @@ class CartmanApp:
             comment = self.message
         else:
             comment = self._read_comment()
+
+        if not comment.strip():
+            raise exceptions.FatalError("empty comment, cancelling")
 
         r = self.post("/ticket/%d" % ticket_id, {
             "ts": timestamp,
