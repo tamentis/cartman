@@ -22,6 +22,7 @@ setup(
     author_email="tamentis@neopulsar.org",
     url="http://github.com/tamentis/cartman/",
     scripts=["cm"],
+    license="ISC License (ISCL, BSD/MIT compatible)",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
