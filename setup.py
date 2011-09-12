@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import os.path
-from distutils.core import setup
+#from distutils.core import setup
+from setuptools import setup, find_packages
 
 from cartman import __version__
 
@@ -19,9 +20,9 @@ setup(
     long_description=README + "\n\n" + CHANGES,
     author="Bertrand Janin",
     author_email="tamentis@neopulsar.org",
-    url="http://github.com/tamentis/tracman/",
+    url="http://github.com/tamentis/cartman/",
     scripts=["cm"],
-    packages=["cartman"],
+    packages=find_packages(),
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
