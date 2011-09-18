@@ -142,6 +142,8 @@ TODO
  - improve editor handling to allow better test units
  - add query support, allowing them to be defined in the config file.
  - add curses support to navigate tickets easily.
+ - store the cookie somewhere to avoid pulling it all the time and waste time
+   in index/login.
 
 
 .. _Trac: http://trac.edgewall.org/
