@@ -131,6 +131,15 @@ of an editor::
 
     $ cm status 1 reopen -m "does not work with x = y"
 
+Hacking
+-------
+ - Create a temp trac for testing purpose (in virtualenv)::
+
+    $ pip install trac
+    $ trac-admin testtrac initenv
+    $ htpasswd -b -c -m htpasswd testuser testpass
+    $ tracd testtrac -p 8080 --basic-auth=.,htpasswd,testrealm
+
 TODO
 ----
  - find a way to read comments (tricky because there is nothing that dumps the
