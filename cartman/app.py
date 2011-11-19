@@ -28,7 +28,7 @@ import text
 
 
 CONFIG_LOCATIONS = [
-    os.path.expanduser("~/.cartmanrc"),
+    os.path.expanduser("~/.cartman/config"),
     "/etc/cartmanrc",
 ]
 
