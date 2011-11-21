@@ -2,5 +2,8 @@ build
 .coverage
 *.pyc
 trac
-*.egg-info
+*.egg*
 dist/
+venv/
+htpasswd
+testtrac
