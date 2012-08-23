@@ -12,7 +12,7 @@ installation/database. All you need is a Trac_ account.
 
 Configuration
 -------------
-At a minimum you need to create a ``~/.cartmanrc`` file with the following::
+At a minimum you need to create a ``~/.cartman/config`` file with the following::
 
     [trac]
     base_url = http://your.trac.install/
