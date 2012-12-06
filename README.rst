@@ -12,7 +12,7 @@ installation/database. All you need is a Trac_ account.
 
 Configuration
 -------------
-At a minimum you need to create a ``~/.cartmanrc`` file with the following::
+At a minimum you need to create a ``~/.cartman/config`` file with the following::
 
     [trac]
     base_url = http://your.trac.install/
@@ -95,6 +95,12 @@ The first parameter to ``cm`` is the owner of the ticket, it populates the
 
     $ cm new jcarmack
 
+If your Trac has custom fields, you can use their identifier in the headers,
+e.g.::
+
+    story_id: 5123
+    iteration: 15
+
 Commenting on a ticket
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -153,6 +159,8 @@ TODO
  - add curses support to navigate tickets easily.
  - store the cookie somewhere to avoid pulling it all the time and waste time
    in index/login.
+ - make the ssl cert verification optional, we shouldn't ignore by default.
+ - fix the version check or remove it..
 
 
 .. _Trac: http://trac.edgewall.org/

@@ -32,8 +32,8 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
-MIN_TRAC_VERSION = (0, 12, 0)
-MAX_TRAC_VERSION = (0, 13, 0)
+MIN_TRAC_VERSION = (0, 120)
+MAX_TRAC_VERSION = (1, 0)
 
 
 class CartmanApp:
@@ -99,7 +99,8 @@ class CartmanApp:
         :param data: Dictionary of parameters to encode at the end of the
                      ``query_string``.
         """
-        return self.session.get(self.base_url + query_string, data=data)
+        return self.session.get(self.base_url + query_string, verify=False,
+                                data=data)
 
     def post(self, query_string, data=None):
         """Generates a POST query on the target Trac system. This also alters
@@ -147,10 +148,17 @@ class CartmanApp:
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
         """
+
         self.login()
         r = self.get(query_string)
-        buf = StringIO.StringIO(r.content)
-        return csv.DictReader(buf, delimiter="\t")
+        data = r.content
+
+        # Recent version of Trac seem to be sending data with a BOM (?!)
+        if data[0] == u'\ufeff':
+            data = data[1:]
+
+        f = StringIO.StringIO(data)
+        return csv.DictReader(f, delimiter="\t")
 
     def get_tickets(self, query_string):
         """Wrapper around the ``get_dicts`` method that converts the
@@ -457,6 +465,7 @@ class CartmanApp:
             os.unlink(filename)
 
             body = em.get_payload()
+            original_headers = headers.copy()
             headers.update(em)
 
             errors = []
@@ -473,7 +482,11 @@ class CartmanApp:
             # Some fields are tolerant to incomplete values, this is where we
             # try to complete them.
             for key in fuzzy_match_fields:
-                valid_options = properties[key.lower()]["options"]
+                lkey = key.lower()
+                if lkey not in properties:
+                    continue
+
+                valid_options = properties[lkey]["options"]
 
                 if headers[key] not in valid_options:
                     m = text.fuzzy_find(headers[key], valid_options)
@@ -498,7 +511,7 @@ class CartmanApp:
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("ticket creation interrupted")
 
-        r = self.post("/newticket", {
+        fields_data = {
             "field_summary": headers["Subject"],
             "field_type": headers["Type"],
             "field_version": headers["Version"],
@@ -509,7 +522,15 @@ class CartmanApp:
             "field_keywords": headers["Keywords"],
             "field_cc": headers["Cc"],
             "field_attachment": "",
-        })
+        }
+
+        # Assume anything outside of the original headers it to be included as
+        # fields.
+        for key, value in headers.items():
+            if key not in original_headers:
+                fields_data["field_" + key] = value
+
+        r = self.post("/newticket", fields_data)
 
         if r.status_code != 200:
             raise exceptions.RequestException("unable to create new ticket.")

@@ -130,11 +130,13 @@ def extract_trac_version(raw_html):
 
     :param raw_html: Dump from any page.
     """
-    re_version = r"Trac (\d+\.\d+\.\d+)"
+    re_version = r"Trac (?:\d+\.\d+(?:\.\d+|[a-z0-9]+))"
     results = re.findall(re_version, raw_html, re.MULTILINE)
 
     if not results:
         return ()
 
-    return tuple([int(tok) for tok in results[0].split(".")])
+    version = results[0]
+
+    return tuple([tok for tok in version.split(".")])
 
