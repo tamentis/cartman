@@ -42,6 +42,17 @@ def fuzzy_find(value, options):
     if value in options.keys():
         return options[value]
 
+    # If we have a single match on tokenized options, that's probably good
+    # enough.
+    tokenized_matches = []
+    for option in options:
+        tokens = option.split()
+        if value in tokens:
+            tokenized_matches.append(option)
+
+    if len(tokenized_matches) == 1:
+        return tokenized_matches[0]
+
     matches = difflib.get_close_matches(value, options.keys())
 
     if not matches:
