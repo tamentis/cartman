@@ -58,6 +58,7 @@ class DummyArgs:
         self.site = "trac"
         self.add_comment = False
         self.message = None
+        self.template = None
 
 
 class AppUnitTest(unittest.TestCase):
