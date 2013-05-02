@@ -99,8 +99,7 @@ class CartmanApp:
         :param data: Dictionary of parameters to encode at the end of the
                      ``query_string``.
         """
-        return self.session.get(self.base_url + query_string, verify=False,
-                                data=data)
+        return self.session.get(self.base_url + query_string, data=data)
 
     def post(self, query_string, data=None):
         """Generates a POST query on the target Trac system. This also alters
@@ -234,6 +233,7 @@ class CartmanApp:
 
         self._read_config()
         self.session = requests.session(auth=(self.username, self.password))
+        self.session.verify = False
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
