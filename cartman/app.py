@@ -179,13 +179,28 @@ class CartmanApp:
         print(ui.title(func_name))
         print(getattr(self, attrname).__doc__)
 
+    def list_commands(self):
+        """Return list of all the commands."""
+        commands = []
+        for attrname in dir(self):
+            if attrname.startswith("run_"):
+                commands.append(attrname)
+        return commands
+
+    def print_commands_list(self):
+        """Print command list minus help."""
+        print("Available Commands:\n")
+        for command_name in self.list_commands():
+            if command_name != "run_help":
+                print(" "*8 + command_name[4:])
+        print("")
+
     # TODO fix indent on doc strings..
     def print_commands(self):
         """Initial attempt to return a help screen with all the commands."""
-        for attrname in dir(self):
-            if attrname.startswith("run_"):
-                self.print_function_help(attrname)
-                print("")
+        for command_name in self.list_commands():
+            self.print_function_help(command_name)
+            print("")
 
     def open_in_browser(self, ticket_id):
         """Open the default web browser on the ticket page.
@@ -279,6 +294,8 @@ class CartmanApp:
         func_name = "run_" + command
         if hasattr(self, func_name):
             self.print_function_help(func_name)
+            if command == "help":
+                self.print_commands_list()
         else:
             raise exceptions.UnknownCommand("unknown command: " + func_name)
 
