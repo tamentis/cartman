@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2013 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -32,8 +32,8 @@ CONFIG_LOCATIONS = [
     "/etc/cartmanrc",
 ]
 
-MIN_TRAC_VERSION = (0, 120)
-MAX_TRAC_VERSION = (1, 0)
+MIN_TRAC_VERSION = (0, 11)
+MAX_TRAC_VERSION = (0, 13)
 
 
 class CartmanApp:

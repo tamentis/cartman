@@ -23,6 +23,9 @@ import difflib
 import exceptions
 
 
+re_version = re.compile(r"Trac (\d+)\.(\d+)", re.MULTILINE)
+
+
 def fuzzy_find(value, options):
     """Given a value and a list of options, find the one option that should
     be the closest match. We first use Python's ``difflib`` to find
@@ -130,13 +133,12 @@ def extract_trac_version(raw_html):
 
     :param raw_html: Dump from any page.
     """
-    re_version = r"Trac (?:\d+\.\d+(?:\.\d+|[a-z0-9]+))"
-    results = re.findall(re_version, raw_html, re.MULTILINE)
+    results = re_version.findall(raw_html)
 
     if not results:
         return ()
 
-    version = results[0]
+    major, minor = tuple([int(t) for t in results[0]])
 
-    return tuple([tok for tok in version.split(".")])
+    return (major, minor)
 
