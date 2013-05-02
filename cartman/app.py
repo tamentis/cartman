@@ -232,7 +232,8 @@ class CartmanApp:
         self.message = args.message
 
         self._read_config()
-        self.session = requests.session(auth=(self.username, self.password))
+        self.session = requests.session()
+        self.session.auth = (self.username, self.password)
         self.session.verify = False
 
         func_name = "run_" + args.command
