@@ -40,6 +40,8 @@ def main():
                         help="open ticket in browser after command")
     parser.add_argument("-s", dest="site", action="store",
                         help="what site to use (default: trac)")
+    parser.add_argument("-t", dest="template", action="store",
+                        help="template to use for new tickets")
     args = parser.parse_args()
 
     # Try to grab the ticket id from stdin, if successful, slap the value as an

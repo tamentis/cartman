@@ -101,6 +101,11 @@ e.g.::
     story_id: 5123
     iteration: 15
 
+If you specify a template with -t, cartman will look for a matching file in the
+``~/.cartman/templates`` folder and will use it as a base for your ticket::
+
+    $ cm new -t sysadmin
+
 Commenting on a ticket
 ^^^^^^^^^^^^^^^^^^^^^^
 

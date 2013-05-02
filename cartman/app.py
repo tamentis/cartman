@@ -205,6 +205,23 @@ class CartmanApp:
         if self.open_after:
             self.open_in_browser(ticket_id)
 
+    def resolve_template(self):
+        """If a template was specified on the command line, return its content.
+
+        """
+        if not self.template:
+            return None
+
+        path_tokens = ["~", ".cartman", "templates", self.template]
+        path = os.path.join(*path_tokens)
+
+        # If the template does not exist, let the exception escalade and crash
+        # the whole app. The error messages are typically explicit enough.
+        with open(os.path.expanduser(path)) as fp:
+            template = fp.read()
+
+        return template
+
     def _format_headers(self, headers):
         """Format the ticket header for the template in the order given in
         ``default_fields``, one per line using the email header syntax.
@@ -230,6 +247,7 @@ class CartmanApp:
         self.open_after = args.open_after
         self.add_comment = args.add_comment
         self.message = args.message
+        self.template = args.template
 
         self._read_config()
         self.session = requests.session()
@@ -425,6 +443,8 @@ class CartmanApp:
         """
         owner = owner or self.username
 
+        template = self.resolve_template()
+
         self.login()
 
         valid = False
@@ -452,9 +472,17 @@ class CartmanApp:
             # Load the current values in a temp file for editing
             (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
             fp = os.fdopen(fd, "w")
-            fp.write(self._format_headers(headers))
-            fp.write("\n\n")
-            fp.write(body)
+
+            # If a template was loaded, only use it on the first loop. The
+            # following loops can use the content from the file.
+            if template:
+                fp.write(template)
+                template = None
+            else:
+                fp.write(self._format_headers(headers))
+                fp.write("\n\n")
+                fp.write(body)
+
             fp.close()
             self._editor(filename)
 
