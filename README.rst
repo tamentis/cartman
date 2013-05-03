@@ -165,7 +165,8 @@ TODO
  - store the cookie somewhere to avoid pulling it all the time and waste time
    in index/login.
  - make the ssl cert verification optional, we shouldn't ignore by default.
- - fix the version check or remove it..
+ - write a cartman daemon that will poll a mailbox for new emails and create
+   tickets from them and later allow to reply to comments, attach files, etc.
 
 
 .. _Trac: http://trac.edgewall.org/
