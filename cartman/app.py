@@ -35,6 +35,9 @@ CONFIG_LOCATIONS = [
 MIN_TRAC_VERSION = (0, 11)
 MAX_TRAC_VERSION = (0, 13)
 
+AUTH_TYPES = {'basic': requests.auth.HTTPBasicAuth,
+              'digest': requests.auth.HTTPDigestAuth}
+
 
 class CartmanApp:
 
@@ -50,6 +53,7 @@ class CartmanApp:
 
     def _read_config(self):
         defaults = {
+            "auth_type": "basic",
             "verify_ssl_cert": "true"
         }
 
@@ -61,8 +65,16 @@ class CartmanApp:
         self.password = cp.get(self.site, "password")
         self.verify_ssl_cert = cp.getboolean(self.site, "verify_ssl_cert")
 
-        self.required_fields = ["To", "Milestone", "Component", "Subject",
-                "Priority"]
+        # load auth
+        auth_type = cp.get(self.site, "auth_type")
+        auth_type = auth_type.lower()
+        if auth_type not in AUTH_TYPES:
+            msg = "Invalid auth setting: %s. Allowed auth_type values are: %s"\
+                 %  (auth_type, ', '.join(sorted(AUTH_TYPES.keys())))
+            raise exceptions.InvalidConfigSetting(msg)
+        self.auth_type = auth_type
+
+        self.required_fields = ["To", "Component", "Subject", "Priority"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
     def _get_form_token(self):
@@ -133,6 +145,12 @@ class CartmanApp:
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
         r = self.get("/login")
+
+        if r.status_code == 401:
+            msg = "login failed on %s. You might be using wrong "\
+                "username/password combo or wrong auth type" % r.request.url
+            raise exceptions.LoginError(msg)
+
         if r.status_code != 302:
             r = self.get("/")
 
@@ -272,7 +290,9 @@ class CartmanApp:
 
         self._read_config()
         self.session = requests.session()
-        self.session.auth = (self.username, self.password)
+
+        auth_class = AUTH_TYPES[self.auth_type]
+        self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
         func_name = "run_" + args.command

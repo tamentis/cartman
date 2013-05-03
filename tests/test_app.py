@@ -37,6 +37,8 @@ class TestableApp(app.CartmanApp):
         self.base_url = "localhost"
         self.username = "nosetests"
         self.password = "nosetests"
+        self.auth_type = "basic"
+        self.verify_ssl_cert = True
         self.required_fields = ["To", "Milestone", "Component", "Subject"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
