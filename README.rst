@@ -22,12 +22,35 @@ View the content of a ticket::
 
 Configuration
 -------------
-At a minimum you need to create a ``~/.cartman/config`` file with the following::
+At a minimum you need to create a ``~/.cartman/config`` file with the
+following::
 
     [trac]
     base_url = http://your.trac.install/
     username = tamentis
     password = sitnemat
+
+Configuration Options
+^^^^^^^^^^^^^^^^^^^^^
+
+Required Settings:
+
+ - base_url
+ - username
+ - password
+
+Optional Settings:
+
+ - auth_type
+ - verify_ssl_cert
+
+The ``auth_type`` will force cartman to use the give authtication type.
+Currently supported auth values are: basic, digest. If not specified defaults
+to basic (which is the most unsafe option).
+
+The ``verify_ssl_cert`` will force cartman to access an SSL site with a
+self-signed or invalid SSL certificate. Use this with care.
+
 
 Command walk through
 --------------------
@@ -149,8 +172,6 @@ same file using the section to separate the sites, here is an example::
     password = sitnemat
     verify_ssl_cert = False
 
-The ``verify_ssl_cert`` will force cartman to access an SSL site with a
-self-signed or invalid SSL certificate. Use this with care.
 
 You would pass the ``-s`` parameter to ``cm`` to define which site to access::
 
