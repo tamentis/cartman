@@ -304,7 +304,7 @@ class CartmanApp:
 
             try:
                 func(*args.parameters)
-            except exceptions.InvalidParameter, ex:
+            except exceptions.InvalidParameter as ex:
                 print("error: %s\n" % ex)
                 self.print_function_help(func_name)
                 return

@@ -180,6 +180,12 @@ You would pass the ``-s`` parameter to ``cm`` to define which site to access::
 You may define all common configuration settings in the ``[DEFAULT]`` section.
 
 
+Requirements
+------------
+ - Python 2.7+, 3.3+ (not 3.2, not 2.6)
+ - python-requests 0.6 and above
+
+
 Hacking
 -------
  - Create a temp Trac for testing purpose (in virtualenv)::
