@@ -11,9 +11,9 @@ class DummyBrowser:
 
 class DummyResponse:
 
-    def __init__(self, status_code, content):
+    def __init__(self, status_code, text):
         self.status_code = status_code
-        self.content = content
+        self.text = text
 
 
 class TestableApp(app.CartmanApp):
@@ -86,7 +86,7 @@ class AppUnitTest(unittest.TestCase):
     def test_run_report(self):
         args = DummyArgs("report", ["1"])
         self.app.set_responses([
-            (200, """id\tstuff\n1\twoot"""),
+            (200, u"""id\tstuff\n1\twoot"""),
         ])
 
         self.app.run(args)
@@ -94,7 +94,7 @@ class AppUnitTest(unittest.TestCase):
     def test_run_view(self):
         args = DummyArgs("view", ["1"])
         self.app.set_responses([
-            (200, """id\tstuff\n1\twoot"""),
+            (200, u"""id\tstuff\n1\twoot"""),
         ])
 
         self.app.run(args)
@@ -102,7 +102,7 @@ class AppUnitTest(unittest.TestCase):
     def test_run_open_on_request(self):
         args = DummyArgs("open", ["1"])
         self.app.set_responses([
-            (200, """id\tstuff\n1\twoot"""),
+            (200, u"""id\tstuff\n1\twoot"""),
         ])
 
         self.app.run(args)
@@ -119,8 +119,8 @@ class AppUnitTest(unittest.TestCase):
         args = DummyArgs("comment", ["1"])
         args.message = "brilliant!"
         self.app.set_responses([
-            (200, """<input name="ts" value="1" />"""), # time stamp
-            (200, ""), # post
+            (200, u"""<input name="ts" value="1" />"""), # time stamp
+            (200, u""), # post
         ])
 
         self.app.run(args)
@@ -129,8 +129,8 @@ class AppUnitTest(unittest.TestCase):
         args = DummyArgs("comment", ["1"])
         args.message = ""
         self.app.set_responses([
-            (200, """<input name="ts" value="1" />"""), # time stamp
-            (200, ""), # post
+            (200, u"""<input name="ts" value="1" />"""), # time stamp
+            (200, u""), # post
         ])
 
         self.assertRaises(exceptions.FatalError, self.app.run, args)
@@ -138,11 +138,11 @@ class AppUnitTest(unittest.TestCase):
     def test_run_status(self):
         args = DummyArgs("status", ["1", "reopen"])
         self.app.set_responses([
-            (200, """<input name="ts" value="1" />
-                     <input type="radio" stuff name="action" value="reopen" />
-                     <input type="radio" stuff name="action" value="close" />
-                     """),
-            (200, ""), # post
+            (200, u"""<input name="ts" value="1" />
+                      <input type="radio" stuff name="action" value="reopen" />
+                      <input type="radio" stuff name="action" value="close" />
+                      """),
+            (200, u""), # post
         ])
 
         self.app.run(args)
@@ -150,29 +150,29 @@ class AppUnitTest(unittest.TestCase):
     def test_run_status(self):
         args = DummyArgs("status", ["1"])
         self.app.set_responses([
-            (200, """hemene, hemene <label>leave</label>
+            (200, u"""hemene, hemene <label>leave</label>
             as stuffy
             </input>
             <input name="ts" value="1" />
                      <input type="radio" stuff name="action" value="reopen" />
                      <input type="radio" stuff name="action" value="close" />
                      """),
-            (200, ""), # post
+            (200, u""), # post
         ])
 
         self.app.run(args)
         # TODO: test return...
 
     def test_run_new(self):
-        self.skipTest("too many filesystem interraction, code need restruct.")
+        self.skipTest("too much file-system interaction, code needs work.")
         args = DummyArgs("new")
         self.app.set_responses([
             (200, self._get_properties()),
-            (200, """<input name="ts" value="1" />
-                     <input type="radio" stuff name="action" value="reopen" />
-                     <input type="radio" stuff name="action" value="close" />
-                     """),
-            (200, ""), # post
+            (200, u"""<input name="ts" value="1" />
+                      <input type="radio" stuff name="action" value="reopen" />
+                      <input type="radio" stuff name="action" value="close" />
+                      """),
+            (200, u""), # post
         ])
 
         self.app.run(args)
