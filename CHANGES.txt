@@ -1,3 +1,18 @@
+0.2.0 (2013-05-03)
+==================
+
+ - cm help now prints a list of commands (by goodwillcoding@webhippo.net),
+ - add auth_type to the config  (by goodwillcoding@webhippo.net),
+ - basic debianization (by Ryan P. Kelly <rpkelly@cpan.org>),
+ - added template support (in ~/.cartman/templates),
+ - document how to hack on this thing,
+ - move the configuration in a sub-directory,
+ - added option to skip SSL cert validation,
+ - added support for Trac 0.12,
+ - match single tokens during fuzzy find,
+ - python 3.3 support,
+ - transmit ticket body with CRLF delimiters.
+
 0.1.0 (2011-09-11)
 ==================
 

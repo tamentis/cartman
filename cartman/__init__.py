@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2013 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -12,4 +12,4 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
