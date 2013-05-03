@@ -1,7 +1,7 @@
 cartman
 =======
 
-.. image:: https://secure.travis-ci.org/tamentis/cartman
+.. image:: https://travis-ci.org/tamentis/cartman.png
 
 *cartman* is an overweight, immature, spoiled, outspoken, lazy, foul-mouthed,
 mean-spirited, racist, sexist, anti-semitic, xenophobic, sociopathic,
