@@ -259,7 +259,7 @@ class CartmanApp:
         path_tokens = ["~", ".cartman", "templates", self.template]
         path = os.path.join(*path_tokens)
 
-        # If the template does not exist, let the exception escalade and crash
+        # If the template does not exist, let the exception escalate and crash
         # the whole app. The error messages are typically explicit enough.
         with open(os.path.expanduser(path)) as fp:
             template = fp.read()
@@ -587,6 +587,11 @@ class CartmanApp:
                               "^C to abort --\n")
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("ticket creation interrupted")
+
+        # Since the body is expected to be using CRLF line termination, we
+        # replace newlines by CRLF if no CRLF is found.
+        if "\r\n" not in body:
+            body = body.replace("\n", "\r\n")
 
         fields_data = {
             "field_summary": headers["Subject"],
