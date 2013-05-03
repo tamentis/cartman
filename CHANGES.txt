@@ -11,7 +11,7 @@
  - added support for Trac 0.12,
  - match single tokens during fuzzy find,
  - python 3.3 support,
- - transmit ticket body with CRLF delimiters.
+ - transmit ticket body with CRLF end of lines.
 
 0.1.0 (2011-09-11)
 ==================
