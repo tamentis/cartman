@@ -56,10 +56,10 @@ def main():
 
     try:
         application.run(args)
-    except cartman.exceptions.UsageException, ex:
+    except cartman.exceptions.UsageException as ex:
         sys.stderr.write("error: %s\n\n" % ex)
         parser.print_help(file=sys.stderr)
-    except cartman.exceptions.FatalError, ex:
+    except cartman.exceptions.FatalError as ex:
         sys.stderr.write("error: %s\n" % ex)
         sys.exit(1)
 

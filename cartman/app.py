@@ -15,16 +15,21 @@
 import csv
 import os
 import requests
-import StringIO
 import tempfile
 import webbrowser
 import email.parser
-import ConfigParser
+from io import StringIO
 
-import exceptions
-import ticket
-import ui
-import text
+# py3k import-fest
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
+
+import cartman.exceptions as exceptions
+import cartman.ticket as ticket
+import cartman.ui as ui
+import cartman.text as text
 
 
 CONFIG_LOCATIONS = [
@@ -57,7 +62,7 @@ class CartmanApp:
             "verify_ssl_cert": "true"
         }
 
-        cp = ConfigParser.RawConfigParser(defaults)
+        cp = configparser.RawConfigParser(defaults)
         cp.read(CONFIG_LOCATIONS)
 
         self.base_url = cp.get(self.site, "base_url")
@@ -95,7 +100,7 @@ class CartmanApp:
         extracted from the JavaScript dictionary exposed on the query page.
 
         """
-        return text.extract_properties(self.get("/query").content)
+        return text.extract_properties(self.get("/query").text)
 
     def _check_version(self):
         if self.trac_version < MIN_TRAC_VERSION \
@@ -158,7 +163,7 @@ class CartmanApp:
             raise exceptions.LoginError("login failed on %s" % r.request.url)
 
         # Grab the Trac version number, and throw a warning if not 0.12.
-        self.trac_version = text.extract_trac_version(r.content)
+        self.trac_version = text.extract_trac_version(r.text)
         self._check_version()
 
         self.logged_in = True
@@ -174,13 +179,13 @@ class CartmanApp:
 
         self.login()
         r = self.get(query_string)
-        data = r.content
+        data = r.text
 
         # Recent version of Trac seem to be sending data with a BOM (?!)
         if data[0] == u'\ufeff':
             data = data[1:]
 
-        f = StringIO.StringIO(data)
+        f = StringIO(data)
         return csv.DictReader(f, delimiter="\t")
 
     def get_tickets(self, query_string):
@@ -357,7 +362,7 @@ class CartmanApp:
 
         query_string = "/ticket/%d?format=tab" % ticket_id
 
-        t = self.get_tickets(query_string).next()
+        t = next(self.get_tickets(query_string))
         title = t.format_title()
 
         print(ui.title(title))
@@ -414,7 +419,7 @@ class CartmanApp:
 
         # Load the initial timestamp from the ticket page
         r = self.get("/ticket/%d" % ticket_id)
-        timestamp = text.extract_timestamp(r.content)
+        timestamp = text.extract_timestamp(r.text)
 
         if self.message:
             comment = self.message
@@ -430,7 +435,7 @@ class CartmanApp:
             "action": "leave",
         })
 
-        if "system-message" in r.content or r.status_code != 200:
+        if "system-message" in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
 
     def run_status(self, ticket_id, status=None):
@@ -445,8 +450,8 @@ class CartmanApp:
 
         # Get all the available actions for this ticket
         r = self.get("/ticket/%d" % ticket_id)
-        timestamp = text.extract_timestamp(r.content)
-        statuses = text.extract_statuses(r.content)
+        timestamp = text.extract_timestamp(r.text)
+        statuses = text.extract_statuses(r.text)
 
         # A ``status`` was provided, try to find the exact match, else just
         # display the current status for this ticket, and the available ones.
@@ -457,7 +462,7 @@ class CartmanApp:
                 raise exceptions.FatalError("bad status (for this ticket: %s)" % \
                                         ", ".join(statuses))
         else:
-            status = text.extract_status_from_ticket_page(r.content)
+            status = text.extract_status_from_ticket_page(r.text)
             print("Current status: %s" % status)
             print("Available statuses: %s" % ", ".join(statuses))
             return
@@ -475,7 +480,7 @@ class CartmanApp:
             "comment": comment,
         })
 
-        if "system-message" in r.content or r.status_code != 200:
+        if "system-message" in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to set status")
 
     def run_new(self, owner=None):
