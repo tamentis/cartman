@@ -49,12 +49,18 @@ class CartmanApp:
         self.browser = webbrowser
 
     def _read_config(self):
-        cp = ConfigParser.ConfigParser()
+        defaults = {
+            "verify_ssl_cert": "true"
+        }
+
+        cp = ConfigParser.RawConfigParser(defaults)
         cp.read(CONFIG_LOCATIONS)
 
-        self.base_url = cp.get(self.site, "base_url", "localhost")
-        self.username = cp.get(self.site, "username", "cartman")
-        self.password = cp.get(self.site, "password", "cartman")
+        self.base_url = cp.get(self.site, "base_url")
+        self.username = cp.get(self.site, "username")
+        self.password = cp.get(self.site, "password")
+        self.verify_ssl_cert = cp.getboolean(self.site, "verify_ssl_cert")
+
         self.required_fields = ["To", "Milestone", "Component", "Subject",
                 "Priority"]
         self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
@@ -267,7 +273,7 @@ class CartmanApp:
         self._read_config()
         self.session = requests.session()
         self.session.auth = (self.username, self.password)
-        self.session.verify = False
+        self.session.verify = self.verify_ssl_cert
 
         func_name = "run_" + args.command
         if hasattr(self, func_name):
