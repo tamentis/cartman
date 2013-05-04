@@ -37,7 +37,6 @@ setup(
         "Programming Language :: Python :: 3.3",
         "Framework :: Trac",
         "Topic :: Software Development :: Bug Tracking",
-        "Topic :: System :: Monitoring",
     ],
     install_requires=[
         "requests>=0.6.0",

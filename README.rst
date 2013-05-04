@@ -194,11 +194,14 @@ Hacking
 
     $ pip install trac
     $ trac-admin testtrac initenv
+    $ trac-admin testtrac permission add testuser TRAC_ADMIN
     $ htpasswd -b -c -m htpasswd testuser testpass
-    $ tracd testtrac -p 8080 --basic-auth=.,htpasswd,testrealm
+    $ tracd testtrac -p 8080 --basic-auth=testtrac,htpasswd,testrealm
 
 TODO
 ----
+ - don't die if there is a trailing slash.
+ - use the owner even if a template is specified.
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
  - create a few shortcuts:
