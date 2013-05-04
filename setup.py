@@ -25,7 +25,7 @@ setup(
     license="ISC License (ISCL, BSD/MIT compatible)",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Developers",
@@ -35,7 +35,6 @@ setup(
         "Operating System :: POSIX",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.3",
-        "Topic :: Home Automation",
         "Framework :: Trac",
         "Topic :: Software Development :: Bug Tracking",
         "Topic :: System :: Monitoring",
