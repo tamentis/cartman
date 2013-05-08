@@ -601,12 +601,18 @@ class CartmanApp:
 
                 valid_options = properties[lkey]["options"]
 
+                # The specified value is not available in the multi-choice.
                 if headers[key] not in valid_options:
                     m = text.fuzzy_find(headers[key], valid_options)
                     if m:
+                        # We found a close match, update the value with it.
                         headers[key] = m
                     else:
-                        if key in self.required_fields:
+                        # We didn't find a close match. If the user entered
+                        # something explicitly or if this field is required,
+                        # this is an error, else just wipe the value and move
+                        # on.
+                        if headers[key] or key in self.required_fields:
                             errors.append("Invalid '%s': expected: %s" % \
                                         (key, ", ".join(valid_options)))
                         else:
