@@ -18,6 +18,7 @@ import requests
 import tempfile
 import webbrowser
 import email.parser
+from collections import OrderedDict
 from io import StringIO
 
 # py3k import-fest
@@ -42,6 +43,18 @@ MAX_TRAC_VERSION = (1, 0)
 
 AUTH_TYPES = {'basic': requests.auth.HTTPBasicAuth,
               'digest': requests.auth.HTTPDigestAuth}
+
+DEFAULT_TEMPLATE = """To:
+Cc:
+Milestone:
+Component:
+Priority: major
+Type: defect
+Keywords:
+Version:
+Subject:
+
+"""
 
 
 class CartmanApp:
@@ -80,7 +93,6 @@ class CartmanApp:
         self.auth_type = auth_type
 
         self.required_fields = ["To", "Component", "Subject", "Priority"]
-        self.default_fields = ["To", "Cc", "Subject", "Component", "Milestone"]
 
     def _get_form_token(self):
         """Return the form_token sent on all the POST forms for validation.
@@ -276,17 +288,13 @@ class CartmanApp:
         return template
 
     def _format_headers(self, headers):
-        """Format the ticket header for the template in the order given in
-        ``default_fields``, one per line using the email header syntax.
+        """Format the ticket header for the template, one per line using the
+        email header syntax.
 
         :param headers: Dictionary of headers to format.
 
         """
-        sort_ref = self.default_fields + headers.keys()
-        pairs = headers.iteritems()
-        pairs = ((k, v) for k, v in pairs if k in self.default_fields or v)
-        pairs = sorted(pairs, key=lambda pair: sort_ref.index(pair[0]))
-        return "\n".join([": ".join(pair) for pair in pairs])
+        return "\n".join([": ".join(pair) for pair in headers.items()])
 
     def run(self, args):
         """Main function called, convert the options and arguments into a
@@ -521,26 +529,15 @@ class CartmanApp:
 
         template = self.resolve_template()
 
-        headers = {
-            "Subject": "",
-            "To": "",
-            "Cc": "",
-            "Milestone": "",
-            "Component": "",
-            "Priority": "major",
-            "Type": "defect",
-            "Keywords": "",
-            "Version": "",
-        }
-        body = "\n"
+        if not template:
+            template = DEFAULT_TEMPLATE
 
-        # Parse the template ahead of time, allowing us to insert the Owner/To
-        # even when specifying a template.
-        if template:
-            ep = email.parser.Parser()
-            em = ep.parsestr(template)
-            body = em.get_payload()
-            headers.update(em)
+        # Parse the template ahead of time, allowing us to insert the Owner/To.
+        ep = email.parser.Parser()
+        em = ep.parsestr(template)
+        body = em.get_payload()
+        headers = OrderedDict(em.items())
+        body = "\n"
 
         # The owner specified on the command line always prevails.
         if owner:
@@ -578,8 +575,9 @@ class CartmanApp:
             os.unlink(filename)
 
             body = em.get_payload()
-            original_headers = headers.copy()
-            headers.update(em)
+            headers = OrderedDict(em.items())
+            # original_headers = headers.copy()
+            # headers.update(em)
 
             errors = []
             fuzzy_match_fields = ("Milestone", "Component", "Type", "Version",
@@ -602,7 +600,7 @@ class CartmanApp:
                 valid_options = properties[lkey]["options"]
 
                 # The specified value is not available in the multi-choice.
-                if headers[key] not in valid_options:
+                if key in headers and headers[key] not in valid_options:
                     m = text.fuzzy_find(headers[key], valid_options)
                     if m:
                         # We found a close match, update the value with it.
@@ -636,23 +634,24 @@ class CartmanApp:
             body = body.replace("\n", "\r\n")
 
         fields_data = {
-            "field_summary": headers["Subject"],
-            "field_type": headers["Type"],
-            "field_version": headers["Version"],
+            "field_summary": headers.get("Subject", ""),
+            "field_type": headers.get("Type", ""),
+            "field_version": headers.get("Version", ""),
             "field_description": body,
-            "field_milestone": headers["Milestone"],
-            "field_component": headers["Component"],
-            "field_owner": headers["To"],
-            "field_keywords": headers["Keywords"],
-            "field_cc": headers["Cc"],
+            "field_milestone": headers.get("Milestone", ""),
+            "field_component": headers.get("Component", ""),
+            "field_owner": headers.get("To", ""),
+            "field_keywords": headers.get("Keywords", ""),
+            "field_cc": headers.get("Cc", ""),
             "field_attachment": "",
         }
 
         # Assume anything outside of the original headers it to be included as
         # fields.
         for key, value in headers.items():
-            if key not in original_headers:
-                fields_data["field_" + key] = value
+            field_name = "field_" + key.lower()
+            if field_name not in fields_data:
+                fields_data[field_name] = value
 
         r = self.post("/newticket", fields_data)
 
