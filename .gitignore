@@ -4,6 +4,6 @@ build
 trac
 *.egg*
 dist/
-venv/
+venv
 htpasswd
 testtrac

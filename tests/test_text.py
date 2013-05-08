@@ -31,21 +31,28 @@ class TextUnitTest(unittest.TestCase):
             "else",
         ])
 
-    def test_extract_timestamp_none(self):
+    def test_extract_timestamps_v0_none(self):
         raw_html = """dewqwlkjhew"""
-        self.assertRaises(exceptions.FatalError, text.extract_timestamp,
+        self.assertRaises(exceptions.FatalError, text.extract_timestamps_v0,
                           raw_html)
 
-    def test_extract_timestamp_one(self):
+    def test_extract_timestamps_v1_none(self):
+        raw_html = """dewqwlkjhew"""
+        self.assertRaises(exceptions.FatalError, text.extract_timestamps_v1,
+                          raw_html)
+
+    def test_extract_timestamps_v0_one(self):
         raw_html = """dewqwlkjhew
         <input name="ts" value="123123" /> stuff"""
-        self.assertEquals(text.extract_timestamp(raw_html), "123123")
+        timestamps = text.extract_timestamps_v0(raw_html)
+        self.assertEquals(timestamps["ts"], "123123")
 
-    def test_extract_timestamp_multiple(self):
+    def test_extract_timestamps_multiple(self):
         raw_html = """dewqwlkjhew
         <input name="ts" value="654321" /> stuff
         <input name="ts" value="123123" /> stuff"""
-        self.assertEquals(text.extract_timestamp(raw_html), "654321")
+        timestamps = text.extract_timestamps_v0(raw_html)
+        self.assertEquals(timestamps["ts"], "654321")
 
     def test_validate_id_None(self):
         self.assertRaises(exceptions.InvalidParameter, text.validate_id, None)

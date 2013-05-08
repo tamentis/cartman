@@ -191,6 +191,12 @@ Requirements
  - python-requests 0.6 and above
 
 
+Compatibility
+-------------
+ - Tested on Trac 0.12.5 and 1.0.1
+ - Probably still works on 0.11, but untested.
+
+
 Hacking
 -------
  - Create a temp Trac for testing purpose (in virtualenv)::
@@ -203,6 +209,16 @@ Hacking
 
 TODO
 ----
+ - use format instead of %.
+ - use a better module for HTML parsing.
+ - return errors to the front end (html-stripped) when then reach cartman.
+ - abstract the text module behind an inheritable class, that will allow
+   version specific parsing implementations.
+ - add a modular backend support, could be set to:
+    - http (current implementation)
+    - xmlrpc (through the plugin)
+    - db (direct database access, has to have access to the database)
+    - direct (use the trac module, has to be on the installation machine)
  - don't die if there is a trailing slash.
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).

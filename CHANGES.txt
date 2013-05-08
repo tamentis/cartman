@@ -3,6 +3,7 @@
 
  - added the ``default`` template.
  - allow an owner to be specified, even with a template.
+ - added v1.0 compatibility.
 
 0.2.0 (2013-05-03)
 ==================

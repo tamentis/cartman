@@ -38,7 +38,7 @@ CONFIG_LOCATIONS = [
 ]
 
 MIN_TRAC_VERSION = (0, 11)
-MAX_TRAC_VERSION = (0, 13)
+MAX_TRAC_VERSION = (1, 0)
 
 AUTH_TYPES = {'basic': requests.auth.HTTPBasicAuth,
               'digest': requests.auth.HTTPDigestAuth}
@@ -104,7 +104,7 @@ class CartmanApp:
 
     def _check_version(self):
         if self.trac_version < MIN_TRAC_VERSION \
-                or self.trac_version >= MAX_TRAC_VERSION:
+                or self.trac_version > MAX_TRAC_VERSION:
             version = ".".join([str(tok) for tok in self.trac_version])
             print("WARNING: Untested Trac version (%s)" % version)
 
@@ -414,6 +414,13 @@ class CartmanApp:
             comment = fp.read()
         return comment
 
+    def _extract_timestamps(self, raw_html):
+        """Wrapper around extract_time_v0 and extract_time_v1."""
+        if self.trac_version >= (1, 0):
+            return text.extract_timestamps_v1(raw_html)
+        else:
+            return text.extract_timestamps_v0(raw_html)
+
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
         anything if successful. Command is cancelled if the content of the
@@ -426,9 +433,9 @@ class CartmanApp:
 
         self.login()
 
-        # Load the initial timestamp from the ticket page
+        # Load the timestamps from the ticket page.
         r = self.get("/ticket/%d" % ticket_id)
-        timestamp = text.extract_timestamp(r.text)
+        timestamps = self._extract_timestamps(r.text)
 
         if self.message:
             comment = self.message
@@ -438,13 +445,23 @@ class CartmanApp:
         if not comment.strip():
             raise exceptions.FatalError("empty comment, cancelling")
 
-        r = self.post("/ticket/%d" % ticket_id, {
-            "ts": timestamp,
+        data = {
             "comment": comment,
             "action": "leave",
-        })
+            "submit": "Submit changes",
+        }
+        data.update(timestamps)
 
-        if "system-message" in r.text or r.status_code != 200:
+        r = self.post("/ticket/%d" % ticket_id, data)
+
+        # Starting from 1.0+, the system-message element is always on the page,
+        # only the style is changed.
+        if self.trac_version >= (1, 0):
+            token = 'system-message" style=""'
+        else:
+            token = 'system-message'
+
+        if token in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
 
     def run_status(self, ticket_id, status=None):
@@ -459,7 +476,7 @@ class CartmanApp:
 
         # Get all the available actions for this ticket
         r = self.get("/ticket/%d" % ticket_id)
-        timestamp = text.extract_timestamp(r.text)
+        timestamps = self._extract_timestamps(r.text)
         statuses = text.extract_statuses(r.text)
 
         # A ``status`` was provided, try to find the exact match, else just
@@ -483,11 +500,13 @@ class CartmanApp:
         else:
             comment = ""
 
-        r = self.post("/ticket/%d" % ticket_id, {
-            "ts": timestamp,
+        data = {
             "action": status,
             "comment": comment,
-        })
+        }
+        data.update(timestamps)
+
+        r = self.post("/ticket/%d" % ticket_id, data)
 
         if "system-message" in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to set status")

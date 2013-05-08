@@ -21,6 +21,7 @@ class TestableApp(app.CartmanApp):
     def __init__(self):
         app.CartmanApp.__init__(self)
         self.browser = DummyBrowser()
+        self.trac_version = (0, 12)
 
     def _editor(self, filename):
         pass

@@ -81,20 +81,35 @@ def validate_id(raw_value):
 
     return converted_id
 
-def extract_timestamp(raw_html):
+
+def extract_timestamps_common(token, raw_html):
     """Given a dump of HTML data, extract the timestamp and return it as a
     string value.
 
     :param raw_html: Dump from the ticket page.
 
     """
-    m = re.search(r"""name="ts" value="([^"]+)""", raw_html, re.MULTILINE)
+    regex = r"""name="{}" value="([^"]+)""".format(token)
+    m = re.search(regex, raw_html, re.MULTILINE)
     if m:
         timestamp = m.group(1)
     else:
         raise exceptions.FatalError("unable to fetch timestamp")
 
     return timestamp
+
+
+def extract_timestamps_v0(raw_html):
+    return {
+        "ts": extract_timestamps_common("ts", raw_html),
+    }
+
+def extract_timestamps_v1(raw_html):
+    return {
+        "start_time": extract_timestamps_common("start_time", raw_html),
+        "view_time": extract_timestamps_common("view_time", raw_html),
+    }
+
 
 def extract_statuses(raw_html):
     """Given a dump of HTML data, extract the timestamp and return it as a
@@ -105,6 +120,7 @@ def extract_statuses(raw_html):
     """
     re_status = r'<input type="radio" [^<]+ name="action" value="([^"]+)'
     return re.findall(re_status, raw_html)
+
 
 def extract_status_from_ticket_page(raw_html):
     """Given a dump of the HTML ticket page, extract the current status of
@@ -124,6 +140,7 @@ def extract_status_from_ticket_page(raw_html):
 
     return status
 
+
 def extract_properties(raw_html):
     """Return all the values typically used in drop-downs on the create
     ticket page, such as Milestones, Versions, etc. These lists are
@@ -139,6 +156,7 @@ def extract_properties(raw_html):
 
     return json.loads(prop_tokens[0])
 
+
 def extract_trac_version(raw_html):
     """Returns a tuple of three values representing the current Trac version.
 
@@ -152,4 +170,3 @@ def extract_trac_version(raw_html):
     major, minor = tuple([int(t) for t in results[0]])
 
     return (major, minor)
-
