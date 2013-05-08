@@ -1,3 +1,9 @@
+0.2.1 (..........)
+==================
+
+ - added the ``default`` template.
+ - allow an owner to be specified, even with a template.
+
 0.2.0 (2013-05-03)
 ==================
 

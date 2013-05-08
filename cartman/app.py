@@ -250,18 +250,27 @@ class CartmanApp:
             self.open_in_browser(ticket_id)
 
     def resolve_template(self):
-        """If a template was specified on the command line, return its content.
+        """Pick up the specified or default template, if any.
+
+        This method returns the content of the template. It first looks for a
+        template specified in the command line with the ``-t`` flag. If none
+        was specified it returns the content of the ``default`` template. If no
+        ``default`` template exist, it will return None.
 
         """
-        if not self.template:
-            return None
+        templates_path = os.path.join("~", ".cartman", "templates")
+        templates_path = os.path.expanduser(templates_path)
 
-        path_tokens = ["~", ".cartman", "templates", self.template]
-        path = os.path.join(*path_tokens)
+        if self.template:
+            path = os.path.join(templates_path, self.template)
+        else:
+            path = os.path.join(templates_path, "default")
+            if not os.path.exists(path):
+                return None
 
         # If the template does not exist, let the exception escalate and crash
         # the whole app. The error messages are typically explicit enough.
-        with open(os.path.expanduser(path)) as fp:
+        with open(path) as fp:
             template = fp.read()
 
         return template
@@ -489,29 +498,43 @@ class CartmanApp:
         usage: cm new [owner]
 
         """
-        owner = owner or self.username
+        self.login()
 
         template = self.resolve_template()
 
-        self.login()
-
-        valid = False
         headers = {
             "Subject": "",
-            "To": owner,
+            "To": "",
             "Cc": "",
             "Milestone": "",
             "Component": "",
-            "Priority": "2",
+            "Priority": "major",
             "Type": "defect",
             "Keywords": "",
             "Version": "",
         }
         body = "\n"
 
+        # Parse the template ahead of time, allowing us to insert the Owner/To
+        # even when specifying a template.
+        if template:
+            ep = email.parser.Parser()
+            em = ep.parsestr(template)
+            body = em.get_payload()
+            headers.update(em)
+
+        # The owner specified on the command line always prevails.
+        if owner:
+            headers["To"] = owner
+
+        # If all else fail, assign it to yourself.
+        if not headers["To"]:
+            headers["To"] = self.username
+
+        valid = False
         while not valid:
             # Get the properties at each iteration, in case an admin updated
-            # the list in the mean time, especially because of this new ticket.
+            # the list in the mean time.
             properties = self._get_properties()
 
             # Assume the user will produce a valid ticket
@@ -521,15 +544,9 @@ class CartmanApp:
             (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
             fp = os.fdopen(fd, "w")
 
-            # If a template was loaded, only use it on the first loop. The
-            # following loops can use the content from the file.
-            if template:
-                fp.write(template)
-                template = None
-            else:
-                fp.write(self._format_headers(headers))
-                fp.write("\n\n")
-                fp.write(body)
+            fp.write(self._format_headers(headers))
+            fp.write("\n\n")
+            fp.write(body)
 
             fp.close()
             self._editor(filename)

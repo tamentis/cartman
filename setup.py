@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import os.path
-#from distutils.core import setup
 from setuptools import setup, find_packages
 
 from cartman import __version__
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
@@ -13,6 +13,7 @@ try:
 except IOError:
     README = CHANGES = ''
 
+
 setup(
     name="cartman",
     version=__version__,
@@ -20,7 +21,7 @@ setup(
     long_description=README + "\n\n" + CHANGES,
     author="Bertrand Janin",
     author_email="b@janin.com",
-    url="http://github.com/tamentis/cartman/",
+    url="http://tamentis.com/projects/cartman/",
     scripts=["cm"],
     license="ISC License (ISCL, BSD/MIT compatible)",
     packages=find_packages(),

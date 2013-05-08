@@ -122,6 +122,9 @@ If you specify a template with -t, cartman will look for a matching file in the
 
     $ cm new -t sysadmin
 
+You can define a ``default`` template in this same directory in order to set
+the template used by default (without ``-t``).
+
 Commenting on a ticket
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -201,7 +204,6 @@ Hacking
 TODO
 ----
  - don't die if there is a trailing slash.
- - use the owner even if a template is specified.
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
  - create a few shortcuts:
