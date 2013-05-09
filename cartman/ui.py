@@ -34,5 +34,5 @@ def title(text):
     if not text:
         return ""
 
-    return text + "\n" + underline(text)
+    return "{}\n{}".format(text, underline(text))
 

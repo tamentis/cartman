@@ -209,7 +209,6 @@ Hacking
 
 TODO
 ----
- - use format instead of %.
  - use a better module for HTML parsing.
  - return errors to the front end (html-stripped) when then reach cartman.
  - abstract the text module behind an inheritable class, that will allow

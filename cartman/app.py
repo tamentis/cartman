@@ -87,8 +87,8 @@ class CartmanApp:
         auth_type = cp.get(self.site, "auth_type")
         auth_type = auth_type.lower()
         if auth_type not in AUTH_TYPES:
-            msg = "Invalid auth setting: %s. Allowed auth_type values are: %s"\
-                 %  (auth_type, ', '.join(sorted(AUTH_TYPES.keys())))
+            msg = ("Invalid auth setting: {}. Allowed auth_type values are: {}"
+                   .format(auth_type, ', '.join(sorted(AUTH_TYPES.keys()))))
             raise exceptions.InvalidConfigSetting(msg)
         self.auth_type = auth_type
 
@@ -118,10 +118,10 @@ class CartmanApp:
         if self.trac_version < MIN_TRAC_VERSION \
                 or self.trac_version > MAX_TRAC_VERSION:
             version = ".".join([str(tok) for tok in self.trac_version])
-            print("WARNING: Untested Trac version (%s)" % version)
+            print("WARNING: Untested Trac version ({})".format(version))
 
     def _editor(self, filename):
-        os.system("$EDITOR '%s'" % filename)
+        os.system("$EDITOR '{}'".format(filename))
 
     def _input(self, prompt):
         return raw_input(prompt)
@@ -164,15 +164,17 @@ class CartmanApp:
         r = self.get("/login")
 
         if r.status_code == 401:
-            msg = "login failed on %s. You might be using wrong "\
-                "username/password combo or wrong auth type" % r.request.url
+            msg = ("login failed on {}. You might be using wrong "
+                   "username/password combo or wrong auth type"
+                   .format(r.request.url))
             raise exceptions.LoginError(msg)
 
         if r.status_code != 302:
             r = self.get("/")
 
         if r.status_code not in (200, 302):
-            raise exceptions.LoginError("login failed on %s" % r.request.url)
+            raise exceptions.LoginError("login failed on {}"
+                                        .format(r.request.url))
 
         # Grab the Trac version number, and throw a warning if not 0.12.
         self.trac_version = text.extract_trac_version(r.text)
@@ -249,7 +251,7 @@ class CartmanApp:
         :param ticket_id: id of the ticket to open in browser.
 
         """
-        self.browser.open(self.base_url + "/ticket/%d" % ticket_id)
+        self.browser.open("{}/ticket/{}".format(self.base_url, ticket_id))
 
     def open_in_browser_on_request(self, ticket_id):
         """Open the default web browser on the ticket page, only if
@@ -327,7 +329,7 @@ class CartmanApp:
             try:
                 func(*args.parameters)
             except exceptions.InvalidParameter as ex:
-                print("error: %s\n" % ex)
+                print("error: {}\n".format(ex))
                 self.print_function_help(func_name)
                 return
         else:
@@ -355,7 +357,7 @@ class CartmanApp:
         """
         report_id = text.validate_id(report_id)
 
-        query_string = "/report/%d?format=tab" % report_id
+        query_string = "/report/{}?format=tab".format(report_id)
 
         for t in self.get_tickets(query_string):
             print(t.format_title())
@@ -367,7 +369,7 @@ class CartmanApp:
 
         """
         for d in self.get_dicts("/report?format=tab"):
-            print("#%(report)s. %(title)s" % d)
+            print("#{report}. {title}".format(**d))
 
     def run_view(self, ticket_id):
         """Display a ticket summary.
@@ -377,7 +379,7 @@ class CartmanApp:
         """
         ticket_id = text.validate_id(ticket_id)
 
-        query_string = "/ticket/%d?format=tab" % ticket_id
+        query_string = "/ticket/{}?format=tab".format(ticket_id)
 
         t = next(self.get_tickets(query_string))
         title = t.format_title()
@@ -442,7 +444,7 @@ class CartmanApp:
         self.login()
 
         # Load the timestamps from the ticket page.
-        r = self.get("/ticket/%d" % ticket_id)
+        r = self.get("/ticket/{}".format(ticket_id))
         timestamps = self._extract_timestamps(r.text)
 
         if self.message:
@@ -460,7 +462,7 @@ class CartmanApp:
         }
         data.update(timestamps)
 
-        r = self.post("/ticket/%d" % ticket_id, data)
+        r = self.post("/ticket/{}".format(ticket_id), data)
 
         # Starting from 1.0+, the system-message element is always on the page,
         # only the style is changed.
@@ -483,7 +485,7 @@ class CartmanApp:
         self.login()
 
         # Get all the available actions for this ticket
-        r = self.get("/ticket/%d" % ticket_id)
+        r = self.get("/ticket/{}".format(ticket_id))
         timestamps = self._extract_timestamps(r.text)
         statuses = text.extract_statuses(r.text)
 
@@ -493,12 +495,12 @@ class CartmanApp:
             status = text.fuzzy_find(status, statuses)
 
             if not status:
-                raise exceptions.FatalError("bad status (for this ticket: %s)" % \
-                                        ", ".join(statuses))
+                raise exceptions.FatalError("bad status (for this ticket: {})"
+                                            .format(", ".join(statuses)))
         else:
             status = text.extract_status_from_ticket_page(r.text)
-            print("Current status: %s" % status)
-            print("Available statuses: %s" % ", ".join(statuses))
+            print("Current status: {}".format(status))
+            print("Available statuses: {}".format(", ".join(statuses)))
             return
 
         if self.message:
@@ -514,7 +516,7 @@ class CartmanApp:
         }
         data.update(timestamps)
 
-        r = self.post("/ticket/%d" % ticket_id, data)
+        r = self.post("/ticket/{}".format(ticket_id), data)
 
         if "system-message" in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to set status")
@@ -588,7 +590,7 @@ class CartmanApp:
                 if key in fuzzy_match_fields:
                     continue
                 if not headers[key] or "**ERROR**" in headers[key]:
-                    errors.append("Invalid '%s': cannot be blank" % key)
+                    errors.append("Invalid '{}': cannot be blank".format(key))
 
             # Some fields are tolerant to incomplete values, this is where we
             # try to complete them.
@@ -611,8 +613,9 @@ class CartmanApp:
                         # this is an error, else just wipe the value and move
                         # on.
                         if headers[key] or key in self.required_fields:
-                            errors.append("Invalid '%s': expected: %s" % \
-                                        (key, ", ".join(valid_options)))
+                            joined_options = ", ".join(valid_options)
+                            errors.append("Invalid '{}': expected: {}"
+                                          .format(key, joined_options))
                         else:
                             headers[key] = ""
 
@@ -620,7 +623,7 @@ class CartmanApp:
                 valid = False
                 print("\nFound the following errors:")
                 for error in errors:
-                    print(" - %s" % error)
+                    print(" - {}".format(error))
 
                 try:
                     self._input("\n-- Hit Enter to return to editor, "\
@@ -664,5 +667,5 @@ class CartmanApp:
             raise exceptions.RequestException("returned ticket_id is invalid.")
 
         self.open_in_browser_on_request(ticket_id)
-        print("ticket #%d created" % ticket_id)
+        print("ticket #{} created".format(ticket_id))
 

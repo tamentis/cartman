@@ -57,7 +57,7 @@ def fuzzy_find(value, options):
 
     if not matches:
         for l_opt, opt in options.items():
-            pattern = r".*\b%s\b.*" % value
+            pattern = r".*\b{}\b.*".format(value)
             if re.match(pattern, l_opt):
                 matches.append(l_opt)
 

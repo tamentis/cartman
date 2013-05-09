@@ -57,10 +57,10 @@ def main():
     try:
         application.run(args)
     except cartman.exceptions.UsageException as ex:
-        sys.stderr.write("error: %s\n\n" % ex)
+        sys.stderr.write("error: {}\n\n".format(ex))
         parser.print_help(file=sys.stderr)
     except cartman.exceptions.FatalError as ex:
-        sys.stderr.write("error: %s\n" % ex)
+        sys.stderr.write("error: {}\n".format(ex))
         sys.exit(1)
 
 if __name__ == '__main__':

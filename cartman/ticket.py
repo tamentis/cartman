@@ -52,14 +52,14 @@ class Ticket:
         self.version = ""
 
     def format_id(self):
-        return "#%d." % self.id
+        return "#{}.".format(self.id)
 
     def format_title(self):
-        return "%(id_fmt)s %(summary)s (%(reporter)s)" % {
-            "id_fmt": self.format_id(),
-            "summary": self.summary,
-            "reporter": self.reporter,
-        }
+        return "{id_fmt} {summary} ({reporter})".format(
+            id_fmt = self.format_id(),
+            summary = self.summary,
+            reporter = self.reporter,
+        )
 
 def factory(ticket_dict):
     """Create a new ticket and copy the properties from a dictionary, with a
