@@ -21,16 +21,11 @@ import email.parser
 from collections import OrderedDict
 from io import StringIO
 
-# py3k import-fest
-try:
-    import ConfigParser as configparser
-except ImportError:
-    import configparser
-
-import cartman.exceptions as exceptions
-import cartman.ticket as ticket
-import cartman.ui as ui
-import cartman.text as text
+from cartman.compat import configparser
+from cartman import exceptions
+from cartman import ticket
+from cartman import ui
+from cartman import text
 
 
 CONFIG_LOCATIONS = [
@@ -57,11 +52,11 @@ Subject:
 """
 
 
-class CartmanApp:
+class CartmanApp(object):
 
     """
-    Ze *cartman* application class. All the commands starting with run_ are
-    exposed to the command-line.
+    Application class. All the commands starting with run_ are exposed to the
+    command-line.
     """
 
     def __init__(self):
@@ -668,4 +663,3 @@ class CartmanApp:
 
         self.open_in_browser_on_request(ticket_id)
         print("ticket #{} created".format(ticket_id))
-

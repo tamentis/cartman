@@ -20,7 +20,7 @@ import re
 import json
 import difflib
 
-import cartman.exceptions as exceptions
+from cartman import exceptions
 
 
 re_version = re.compile(r"Trac (\d+)\.(\d+)", re.MULTILINE)
