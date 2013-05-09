@@ -209,7 +209,7 @@ Hacking
 
 TODO
 ----
- - use a better module for HTML parsing.
+ - use a better module for HTML parsing (e.g. BeautifulSoup4).
  - return errors to the front end (html-stripped) when then reach cartman.
  - abstract the text module behind an inheritable class, that will allow
    version specific parsing implementations.

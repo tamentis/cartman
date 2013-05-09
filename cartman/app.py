@@ -410,6 +410,9 @@ class CartmanApp(object):
         print(ui.title("Status"))
         print(", ".join(properties["status"]["options"]) + "\n")
 
+        print(ui.title("Priority"))
+        print(", ".join(properties["priority"]["options"]) + "\n")
+
     def _read_comment(self):
         """Prompt for a piece of text via the current EDITOR. Returns a string.
         """
@@ -573,8 +576,6 @@ class CartmanApp(object):
 
             body = em.get_payload()
             headers = OrderedDict(em.items())
-            # original_headers = headers.copy()
-            # headers.update(em)
 
             errors = []
             fuzzy_match_fields = ("Milestone", "Component", "Type", "Version",
@@ -584,7 +585,7 @@ class CartmanApp(object):
             for key in self.required_fields:
                 if key in fuzzy_match_fields:
                     continue
-                if not headers[key] or "**ERROR**" in headers[key]:
+                if not headers.get(key) or "**ERROR**" in headers[key]:
                     errors.append("Invalid '{}': cannot be blank".format(key))
 
             # Some fields are tolerant to incomplete values, this is where we

@@ -41,6 +41,7 @@ setup(
     ],
     install_requires=[
         "requests>=0.6.0",
+#        "beautifulsoup4",
     ],
     setup_requires=[
         "nose>=1.0",
