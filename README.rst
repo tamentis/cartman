@@ -221,10 +221,12 @@ TODO
  - don't die if there is a trailing slash.
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
- - create a few shortcuts:
-   - cm fixed 1
-   - cm accept 1
-   - cm invalid 1
+ - create an alias system similar to mercurial::
+
+    [alias]
+    close = status fixed
+    reopen = status reopen -m
+
  - improve editor handling to allow better test units
  - add query support, allowing them to be defined in the config file.
  - add curses support to navigate tickets easily.
