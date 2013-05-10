@@ -610,7 +610,7 @@ class CartmanApp(object):
                         # on.
                         if headers[key] or key in self.required_fields:
                             joined_options = ", ".join(valid_options)
-                            errors.append("Invalid '{}': expected: {}"
+                            errors.append(u"Invalid '{}': expected: {}"
                                           .format(key, joined_options))
                         else:
                             headers[key] = ""
@@ -619,7 +619,7 @@ class CartmanApp(object):
                 valid = False
                 print("\nFound the following errors:")
                 for error in errors:
-                    print(" - {}".format(error))
+                    print(u" - {}".format(error))
 
                 try:
                     self._input("\n-- Hit Enter to return to editor, "\
