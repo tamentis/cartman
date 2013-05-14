@@ -207,34 +207,6 @@ Hacking
     $ htpasswd -b -c -m htpasswd testuser testpass
     $ tracd testtrac -p 8080 --basic-auth=testtrac,htpasswd,testrealm
 
-TODO
-----
- - use a better module for HTML parsing (e.g. BeautifulSoup4).
- - return errors to the front end (html-stripped) when then reach cartman.
- - abstract the text module behind an inheritable class, that will allow
-   version specific parsing implementations.
- - add a modular backend support, could be set to:
-    - http (current implementation)
-    - xmlrpc (through the plugin)
-    - db (direct database access, has to have access to the database)
-    - direct (use the trac module, has to be on the installation machine)
- - don't die if there is a trailing slash.
- - find a way to read comments (tricky because there is nothing that dumps the
-   comments in their raw format in the default Trac installation).
- - create an alias system similar to mercurial::
-
-    [alias]
-    close = status fixed
-    reopen = status reopen -m
-
- - improve editor handling to allow better test units
- - add query support, allowing them to be defined in the config file.
- - add curses support to navigate tickets easily.
- - store the cookie somewhere to avoid pulling it all the time and waste time
-   in index/login.
- - write a cartman daemon that will poll a mailbox for new emails and create
-   tickets from them and later allow to reply to comments, attach files, etc.
-
 
 .. _Trac: http://trac.edgewall.org/
 .. _vim: http://www.vim.org/
