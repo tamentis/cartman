@@ -537,7 +537,6 @@ class CartmanApp(object):
         em = ep.parsestr(template)
         body = em.get_payload()
         headers = OrderedDict(em.items())
-        body = "\n"
 
         # The owner specified on the command line always prevails.
         if owner:
