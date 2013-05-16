@@ -188,14 +188,13 @@ class CartmanApp(object):
 
         self.login()
         r = self.get(query_string)
-        data = r.text
+        data = r.content
 
         # Recent version of Trac seem to be sending data with a BOM (?!)
         if data[0] == u'\ufeff':
             data = data[1:]
 
-        f = StringIO(data)
-        return csv.DictReader(f, delimiter="\t")
+        return csv.DictReader(data.splitlines(), delimiter="\t")
 
     def get_tickets(self, query_string):
         """Wrapper around the ``get_dicts`` method that converts the
