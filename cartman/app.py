@@ -193,7 +193,7 @@ class CartmanApp(object):
         if data[0] == u'\ufeff':
             data = data[1:]
 
-        return csv.DictReader(data.splitlines(), delimiter="\t")
+        return csv.DictReader(data.splitlines(True), delimiter="\t")
 
     def get_tickets(self, query_string):
         """Wrapper around the ``get_dicts`` method that converts the
