@@ -19,7 +19,6 @@ import tempfile
 import webbrowser
 import email.parser
 from collections import OrderedDict
-from io import StringIO
 
 from cartman.compat import configparser
 from cartman import exceptions
