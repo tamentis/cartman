@@ -185,6 +185,12 @@ You would pass the ``-s`` parameter to ``cm`` to define which site to access::
 You may define all common configuration settings in the ``[DEFAULT]`` section.
 
 
+Installation
+------------
+Quick and dirty if you are not familiar with Python packaging::
+
+    sudo python setup.py install
+
 Requirements
 ------------
  - Python 2.7+, 3.3+ (not 3.2, not 2.6)
