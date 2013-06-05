@@ -1,3 +1,4 @@
+ - add cm search wrapping the search.
  - keep the edited file until we know the delivery is successful, wrap the
    whole thing in a diaper and tell the user where to find the temporary file.
  - use a better module for HTML parsing (e.g. BeautifulSoup4).
