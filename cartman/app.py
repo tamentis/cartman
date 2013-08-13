@@ -88,7 +88,7 @@ class CartmanApp(object):
         self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
-        func = getattr(self, func_name, None)
+        func = getattr(self, "run_" + args.command, None)
         if not func:
             raise exceptions.UnknownCommand("unknown command: " + args.command)
 

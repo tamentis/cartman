@@ -24,10 +24,10 @@ class TestableApp(app.CartmanApp):
         self.browser = DummyBrowser()
         self.trac_version = (0, 12)
 
-    def _editor(self, filename):
+    def editor(self, filename):
         pass
 
-    def _input(self, prompt):
+    def input(self, prompt):
         return ""
 
     def set_responses(self, responses):
@@ -35,7 +35,7 @@ class TestableApp(app.CartmanApp):
         for args in responses:
             self.responses.append(DummyResponse(*args))
 
-    def _read_config(self):
+    def read_config(self):
         self.base_url = "localhost"
         self.username = "nosetests"
         self.password = "nosetests"
