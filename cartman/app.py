@@ -35,8 +35,10 @@ CONFIG_LOCATIONS = [
 MIN_TRAC_VERSION = (0, 11)
 MAX_TRAC_VERSION = (1, 0)
 
-AUTH_TYPES = {'basic': requests.auth.HTTPBasicAuth,
-              'digest': requests.auth.HTTPDigestAuth}
+AUTH_TYPES = {
+    "basic": requests.auth.HTTPBasicAuth,
+    "digest": requests.auth.HTTPDigestAuth,
+}
 
 DEFAULT_TEMPLATE = """To:
 Cc:
@@ -63,10 +65,48 @@ class CartmanApp(object):
         self.logged_in = False
         self.browser = webbrowser
 
-    def _read_config(self):
+    def run(self, args):
+        """Main function call.
+
+        Converts the options and arguments into a function call within this
+        instance.
+
+        :param options: Options returned from the optparse module.
+        :param args: Arguments returned from the optparse module.
+
+        """
+        self.site = args.site or self.site
+        self.open_after = args.open_after
+        self.add_comment = args.add_comment
+        self.message = args.message
+        self.template = args.template
+
+        self.read_config()
+        self.session = requests.session()
+
+        auth_class = AUTH_TYPES[self.auth_type]
+        self.session.auth = auth_class(self.username, self.password)
+        self.session.verify = self.verify_ssl_cert
+
+        func = getattr(self, func_name, None)
+        if not func:
+            raise exceptions.UnknownCommand("unknown command: " + args.command)
+
+        if "help" in args.parameters:
+            self.print_function_help(func_name)
+            return
+
+        try:
+            func(*args.parameters)
+        except exceptions.InvalidParameter as ex:
+            print("error: {}\n".format(ex))
+            self.print_function_help(func_name)
+            return
+
+    def read_config(self):
         defaults = {
             "auth_type": "basic",
-            "verify_ssl_cert": "true"
+            "verify_ssl_cert": "true",
         }
 
         cp = configparser.RawConfigParser(defaults)
@@ -82,14 +122,15 @@ class CartmanApp(object):
         auth_type = auth_type.lower()
         if auth_type not in AUTH_TYPES:
             msg = ("Invalid auth setting: {}. Allowed auth_type values are: {}"
-                   .format(auth_type, ', '.join(sorted(AUTH_TYPES.keys()))))
+                   .format(auth_type, ", ".join(sorted(AUTH_TYPES.keys()))))
             raise exceptions.InvalidConfigSetting(msg)
         self.auth_type = auth_type
 
         self.required_fields = ["To", "Component", "Subject", "Priority"]
 
-    def _get_form_token(self):
+    def get_form_token(self):
         """Return the form_token sent on all the POST forms for validation.
+
         This value is store as a cookie, on the session. If the specifically
         named cookie is not found, returns an empty string.
 
@@ -100,24 +141,25 @@ class CartmanApp(object):
 
         return ""
 
-    def _get_properties(self):
-        """Return all the values typically used in drop-downs on the create
-        ticket page, such as Milestones, Versions, etc. These lists are
-        extracted from the JavaScript dictionary exposed on the query page.
+    def get_properties(self):
+        """Return the values used in drop-downs on the create ticket page.
+
+        The lists such as Milestones and Versions are extracted from a
+        JavaScript dictionary exposed on the query page.
 
         """
         return text.extract_properties(self.get("/query").text)
 
-    def _check_version(self):
+    def check_version(self):
         if self.trac_version < MIN_TRAC_VERSION \
                 or self.trac_version > MAX_TRAC_VERSION:
             version = ".".join([str(tok) for tok in self.trac_version])
             print("WARNING: Untested Trac version ({})".format(version))
 
-    def _editor(self, filename):
+    def editor(self, filename):
         os.system("$EDITOR '{}'".format(filename))
 
-    def _input(self, prompt):
+    def input(self, prompt):
         return raw_input(prompt)
 
     def get(self, query_string, data=None):
@@ -131,9 +173,10 @@ class CartmanApp(object):
         return self.session.get(self.base_url + query_string, data=data)
 
     def post(self, query_string, data=None):
-        """Generates a POST query on the target Trac system. This also alters
-        the given data to include the form token stored on the cookies. Without
-        this token, Trac will refuse form submissions.
+        """Generates a POST query on the target Trac system.
+
+        This also alters the given data to include the form token stored on the
+        cookies. Without this token, Trac will refuse form submissions.
 
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
@@ -141,11 +184,12 @@ class CartmanApp(object):
                      target page.
         """
         if data:
-            data["__FORM_TOKEN"] = self._get_form_token()
+            data["__FORM_TOKEN"] = self.get_form_token()
         return self.session.post(self.base_url + query_string, data=data)
 
     def login(self):
         """Ensure the current session is logged-in, accessing the main page.
+
         This will allow Trac to generate the cookies that will be stored on our
         ``self.session`` object.
 
@@ -172,14 +216,14 @@ class CartmanApp(object):
 
         # Grab the Trac version number, and throw a warning if not 0.12.
         self.trac_version = text.extract_trac_version(r.text)
-        self._check_version()
+        self.check_version()
 
         self.logged_in = True
 
     def get_dicts(self, query_string):
-        """Wrapper around the ``get`` method that ensures we are logged-in and
-        converts the returned data to dictionaries, assuming the query
-        originally returns tab-delimited raw data.
+        """Wrapper around ``get()`` that ensures auth and returns dicts.
+
+        This methods assumes the response contains tab-delimited data.
 
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
@@ -190,14 +234,13 @@ class CartmanApp(object):
         data = r.content
 
         # Recent version of Trac seem to be sending data with a BOM (?!)
-        if data[0] == u'\ufeff':
+        if data[0] == u"\ufeff":
             data = data[1:]
 
         return csv.DictReader(data.splitlines(True), delimiter="\t")
 
     def get_tickets(self, query_string):
-        """Wrapper around the ``get_dicts`` method that converts the
-        dictionaries into ``Ticket`` instances.
+        """Wrapper around ``get_dicts()`` that returns ``Ticket`` instances.
 
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
@@ -217,6 +260,7 @@ class CartmanApp(object):
 
     def list_commands(self):
         """Return list of all the commands."""
+
         commands = []
         for attrname in dir(self):
             if attrname.startswith("run_"):
@@ -225,6 +269,7 @@ class CartmanApp(object):
 
     def print_commands_list(self):
         """Print command list minus help."""
+
         print("Available Commands:\n")
         for command_name in self.list_commands():
             if command_name != "run_help":
@@ -234,6 +279,7 @@ class CartmanApp(object):
     # TODO fix indent on doc strings..
     def print_commands(self):
         """Initial attempt to return a help screen with all the commands."""
+
         for command_name in self.list_commands():
             self.print_function_help(command_name)
             print("")
@@ -291,42 +337,16 @@ class CartmanApp(object):
         """
         return "\n".join([": ".join(pair) for pair in headers.items()])
 
-    def run(self, args):
-        """Main function called, convert the options and arguments into a
-        function call within this instance.
-
-        :param options: Options returned from the optparse module.
-        :param args: Arguments returned from the optparse module.
-
-        """
-        self.site = args.site or self.site
-        self.open_after = args.open_after
-        self.add_comment = args.add_comment
-        self.message = args.message
-        self.template = args.template
-
-        self._read_config()
-        self.session = requests.session()
-
-        auth_class = AUTH_TYPES[self.auth_type]
-        self.session.auth = auth_class(self.username, self.password)
-        self.session.verify = self.verify_ssl_cert
-
-        func_name = "run_" + args.command
-        if hasattr(self, func_name):
-            func = getattr(self, func_name)
-            if "help" in args.parameters:
-                self.print_function_help(func_name)
-                return
-
-            try:
-                func(*args.parameters)
-            except exceptions.InvalidParameter as ex:
-                print("error: {}\n".format(ex))
-                self.print_function_help(func_name)
-                return
-        else:
-            raise exceptions.UnknownCommand("unknown command: " + args.command)
+    #
+    # Command definitions
+    #
+    # The following commands are triggered when cm is called from the command
+    # line. The first argument is the command, the corresponding method is
+    # named with a run_ prefix.
+    #
+    # Note that the docstring for these functions is used for the --help auto
+    # documentation.
+    #
 
     def run_help(self, command="help"):
         """Show the help for a given command.
@@ -397,7 +417,7 @@ class CartmanApp(object):
         usage: cm properties
 
         """
-        properties = self._get_properties()
+        properties = self.get_properties()
 
         print(ui.title("Milestones"))
         print(", ".join(properties["milestone"]["options"]) + "\n")
@@ -415,7 +435,7 @@ class CartmanApp(object):
         """Prompt for a piece of text via the current EDITOR. Returns a string.
         """
         (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
-        self._editor(filename)
+        self.editor(filename)
         with open(filename) as fp:
             comment = fp.read()
         return comment
@@ -465,7 +485,7 @@ class CartmanApp(object):
         if self.trac_version >= (1, 0):
             token = 'system-message" style=""'
         else:
-            token = 'system-message'
+            token = "system-message"
 
         if token in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
@@ -548,7 +568,7 @@ class CartmanApp(object):
         while not valid:
             # Get the properties at each iteration, in case an admin updated
             # the list in the mean time.
-            properties = self._get_properties()
+            properties = self.get_properties()
 
             # Assume the user will produce a valid ticket
             valid = True
@@ -562,7 +582,7 @@ class CartmanApp(object):
             fp.write(body)
 
             fp.close()
-            self._editor(filename)
+            self.editor(filename)
 
             # Use the email parser to get the headers.
             ep = email.parser.Parser()
@@ -619,7 +639,7 @@ class CartmanApp(object):
                     print(u" - {}".format(error))
 
                 try:
-                    self._input("\n-- Hit Enter to return to editor, "\
+                    self.input("\n-- Hit Enter to return to editor, "\
                               "^C to abort --\n")
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("ticket creation interrupted")

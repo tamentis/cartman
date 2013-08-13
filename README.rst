@@ -213,6 +213,12 @@ Hacking
     $ htpasswd -b -c -m htpasswd testuser testpass
     $ tracd testtrac -p 8080 --basic-auth=testtrac,htpasswd,testrealm
 
+ - Follow PEP-8, existing style then the following notes.
+ - For dictionaries, lists: keep commas after each items, closing bracket
+   should close on the same column as the first letter of the statement with the
+   opening bracket.
+ - Use double-quotes for strings unless it makes it easier on certain strings
+   (avoids escaped double-quotes).
 
 .. _Trac: http://trac.edgewall.org/
 .. _vim: http://www.vim.org/
