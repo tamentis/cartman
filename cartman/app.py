@@ -88,6 +88,7 @@ class CartmanApp(object):
         self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
+        func_name = "run_" + args.command
         func = getattr(self, "run_" + args.command, None)
         if not func:
             raise exceptions.UnknownCommand("unknown command: " + args.command)
@@ -112,7 +113,7 @@ class CartmanApp(object):
         cp = configparser.RawConfigParser(defaults)
         cp.read(CONFIG_LOCATIONS)
 
-        self.base_url = cp.get(self.site, "base_url")
+        self.base_url = cp.get(self.site, "base_url").rstrip("/")
         self.username = cp.get(self.site, "username")
         self.password = cp.get(self.site, "password")
         self.verify_ssl_cert = cp.getboolean(self.site, "verify_ssl_cert")
@@ -174,8 +175,10 @@ class CartmanApp(object):
         """
         r = self.session.get(self.base_url + query_string, data=data)
 
-        if r.status_code >= 500:
-            message = "{} returned {}".format(self.base_url, r)
+        if r.status_code >= 400:
+            message = text.extract_message(r.text)
+            if not message:
+                message = "{} returned {}".format(self.base_url, r)
             raise exceptions.FatalError(message)
 
         return r
@@ -239,7 +242,7 @@ class CartmanApp(object):
 
         self.login()
         r = self.get(query_string)
-        data = r.content
+        data = r.text
 
         # Recent version of Trac seem to be sending data with a BOM (?!)
         if data[0] == u"\ufeff":

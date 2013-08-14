@@ -8,10 +8,10 @@ from cartman import __version__
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
-    README = open(os.path.join(here, 'README.rst')).read()
-    CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+    README = open(os.path.join(here, "README.rst")).read()
+    CHANGES = open(os.path.join(here, "CHANGES.txt")).read()
 except IOError:
-    README = CHANGES = ''
+    README = CHANGES = ""
 
 
 setup(
@@ -40,7 +40,7 @@ setup(
         "Topic :: Software Development :: Bug Tracking",
     ],
     install_requires=[
-        "requests>=0.6.0",
+        "requests>=1.2.0",
 #        "beautifulsoup4",
     ],
     setup_requires=[

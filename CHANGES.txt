@@ -5,6 +5,7 @@
  - crash properly and early when trac return error 500.
  - crash with a descriptive message when you lack permission to create a
    ticket.
+ - don't die if the ``base_url`` has a trailing slash.
 
 0.2.1 (2013-05-23)
 ==================

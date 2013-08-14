@@ -85,6 +85,11 @@ class AppUnitTest(unittest.TestCase):
         args = DummyArgs("help")
         self.app.run(args)
 
+    def test_run_function_help(self):
+        args = DummyArgs("report", [])
+        self.app.set_responses([])
+        self.app.run(args)
+
     def test_run_report(self):
         args = DummyArgs("report", ["1"])
         self.app.set_responses([
