@@ -224,6 +224,7 @@ Hacking
    opening bracket.
  - Use double-quotes for strings unless it makes it easier on certain strings
    (avoids escaped double-quotes).
+ - If an error is exceptional, let the exception rise.
 
 .. _Trac: http://trac.edgewall.org/
 .. _vim: http://www.vim.org/

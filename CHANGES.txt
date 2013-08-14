@@ -2,10 +2,15 @@
 ==================
 
  - added ``search`` command.
+ - added support for persisted cookies, allowing for faster access time (less
+   login calls).
  - crash properly and early when trac return error 500.
  - crash with a descriptive message when you lack permission to create a
    ticket.
  - don't die if the ``base_url`` has a trailing slash.
+ - test the existence of base_url instead of stack tracing.
+ - create the ~/.cartman/ directory by default.
+ - die with an error message if you don't have an $EDITOR env var.
 
 0.2.1 (2013-05-23)
 ==================

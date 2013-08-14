@@ -1,7 +1,9 @@
 Pending for 0.3.0
 =================
  - store the cookie somewhere to avoid pulling it all the time and waste time
-   in index/login.
+   in index/login. (work in progress --- removed all the self.login()). Now we
+   need to catch the 403's and run self.login if we haven't yet. Basically
+   first rely on cookies, fall back to login, then fail.
  - alpha sort the commands
  - find out why we have a self.login() in get_dicts().
 

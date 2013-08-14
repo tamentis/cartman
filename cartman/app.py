@@ -18,6 +18,7 @@ import requests
 import tempfile
 import webbrowser
 import email.parser
+import cookielib
 from collections import OrderedDict
 
 from cartman.compat import configparser
@@ -27,8 +28,10 @@ from cartman import ui
 from cartman import text
 
 
+BASE_DIRECTORY = "~/.cartman"
+COOKIEJAR_PATH = os.path.expanduser(os.path.join(BASE_DIRECTORY, "cookies"))
 CONFIG_LOCATIONS = [
-    os.path.expanduser("~/.cartman/config"),
+    os.path.expanduser(os.path.join(BASE_DIRECTORY, "config")),
     "/etc/cartmanrc",
 ]
 
@@ -81,8 +84,13 @@ class CartmanApp(object):
         self.message = args.message
         self.template = args.template
 
+        self.ensure_directories()
         self.read_config()
         self.session = requests.session()
+        self.session.cookies = cookielib.LWPCookieJar(filename=COOKIEJAR_PATH)
+
+        if os.path.exists(COOKIEJAR_PATH):
+            self.session.cookies.load(ignore_discard=True)
 
         auth_class = AUTH_TYPES[self.auth_type]
         self.session.auth = auth_class(self.username, self.password)
@@ -104,7 +112,24 @@ class CartmanApp(object):
             self.print_function_help(func_name)
             return
 
+        self.session.cookies.save(ignore_discard=True)
+
+    def ensure_directories(self):
+        """Creates a ~/.cartman/ if none exist."""
+
+        expanded_directory = os.path.expanduser(BASE_DIRECTORY)
+
+        if os.path.exists(expanded_directory):
+            return
+
+        os.mkdir(expanded_directory, 0750)
+
     def read_config(self):
+        """Populate the instance with settings for the config file.
+
+        If we can't find any section for the given site, error gracefully.
+
+        """
         defaults = {
             "auth_type": "basic",
             "verify_ssl_cert": "true",
@@ -112,6 +137,10 @@ class CartmanApp(object):
 
         cp = configparser.RawConfigParser(defaults)
         cp.read(CONFIG_LOCATIONS)
+
+        if not cp.has_option(self.site, "base_url"):
+            raise exceptions.ConfigError("unable to find a [{}] section with "
+                                         "a base_url.".format(self.site))
 
         self.base_url = cp.get(self.site, "base_url").rstrip("/")
         self.username = cp.get(self.site, "username")
@@ -122,9 +151,10 @@ class CartmanApp(object):
         auth_type = cp.get(self.site, "auth_type")
         auth_type = auth_type.lower()
         if auth_type not in AUTH_TYPES:
-            msg = ("Invalid auth setting: {}. Allowed auth_type values are: {}"
-                   .format(auth_type, ", ".join(sorted(AUTH_TYPES.keys()))))
-            raise exceptions.InvalidConfigSetting(msg)
+            supported_auths = ", ".join(sorted(AUTH_TYPES.keys()))
+            msg = ("invalid auth setting '{}', supported: {}"
+                  .format(auth_type, supported_auths))
+            raise exceptions.ConfigError(msg)
         self.auth_type = auth_type
 
         self.required_fields = ["To", "Component", "Subject", "Priority"]
@@ -132,7 +162,7 @@ class CartmanApp(object):
     def get_form_token(self):
         """Return the form_token sent on all the POST forms for validation.
 
-        This value is store as a cookie, on the session. If the specifically
+        This value is stored as a cookie, on the session. If the specifically
         named cookie is not found, returns an empty string.
 
         """
@@ -152,12 +182,19 @@ class CartmanApp(object):
         return text.extract_properties(self.get("/query").text)
 
     def check_version(self):
+        """Print a warning if the version of Trac is unsupported."""
+
         if self.trac_version < MIN_TRAC_VERSION \
                 or self.trac_version > MAX_TRAC_VERSION:
             version = ".".join([str(tok) for tok in self.trac_version])
             print("WARNING: Untested Trac version ({})".format(version))
 
     def editor(self, filename):
+        """Spawn the default editor ($EDITOR env var)."""
+
+        if not os.getenv("EDITOR"):
+            raise FatalError("unable to get an EDITOR environment variable")
+
         os.system("$EDITOR '{}'".format(filename))
 
     def input(self, prompt):
@@ -166,7 +203,7 @@ class CartmanApp(object):
     def get(self, query_string, data=None):
         """Generates a GET query on the target Trac system.
 
-        TODO: extract the error element as message.
+        TODO: extract all the possible error elements as message.
 
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
@@ -238,15 +275,18 @@ class CartmanApp(object):
 
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
-        """
 
-        self.login()
+        """
         r = self.get(query_string)
         data = r.text
 
         # Recent version of Trac seem to be sending data with a BOM (?!)
         if data[0] == u"\ufeff":
             data = data[1:]
+
+        # And since the csv module in Python 2.7 is not unicode-friendly, we
+        # encode to UTF-8.
+        data = data.encode("utf-8")
 
         return csv.DictReader(data.splitlines(True), delimiter="\t")
 
@@ -469,8 +509,6 @@ class CartmanApp(object):
         """
         ticket_id = text.validate_id(ticket_id)
 
-        self.login()
-
         # Load the timestamps from the ticket page.
         r = self.get("/ticket/{}".format(ticket_id))
         timestamps = self._extract_timestamps(r.text)
@@ -524,8 +562,6 @@ class CartmanApp(object):
         """
         ticket_id = text.validate_id(ticket_id)
 
-        self.login()
-
         # Get all the available actions for this ticket
         r = self.get("/ticket/{}".format(ticket_id))
         timestamps = self._extract_timestamps(r.text)
@@ -569,8 +605,6 @@ class CartmanApp(object):
         usage: cm new [owner]
 
         """
-        self.login()
-
         template = self.resolve_template()
 
         if not template:

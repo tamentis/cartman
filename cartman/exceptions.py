@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2013 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -13,20 +13,26 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-class UsageException(Exception):
+class CartmanException(Exception):
+    """Define the prefix to use on error messages."""
+    prefix = "error"
+
+
+class UsageException(CartmanException):
     """Base class for any program usage errors/exceptions."""
-
-
-class InvalidConfigSetting(UsageException):
-    """A config setting is invalids (wrong type?)."""
 
 
 class InvalidParameter(UsageException):
     """A parameter for the command is invalids (wrong type?)."""
 
 
-class FatalError(Exception):
+class FatalError(CartmanException):
     """Unrecoverable error during runtime."""
+
+
+class ConfigError(FatalError):
+    """Configuration file is not usable."""
+    prefix = "config"
 
 
 class UnknownCommand(FatalError):
