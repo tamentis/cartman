@@ -57,14 +57,19 @@ self-signed or invalid SSL certificate. Use this with care.
 Command walk through
 --------------------
 
-Report Listing
-^^^^^^^^^^^^^^
+Report Listing and Search
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dump a list of tickets on screen, without details::
 
     $ cm report 1
     #142. fix world hunger (bjanin@)
     #159. ignore unpaid rent (bjanin@)
+
+Another way to find ticket is using the search command::
+
+    $ cm search dead mouse
+    #154. mickey
 
 Ticket View
 ^^^^^^^^^^^
