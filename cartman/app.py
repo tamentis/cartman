@@ -67,6 +67,7 @@ class CartmanApp(object):
         self.site = "trac"
         self.logged_in = False
         self.browser = webbrowser
+        self.trac_version = (0, 0)
 
     def run(self, args):
         """Main function call.
@@ -181,13 +182,24 @@ class CartmanApp(object):
         """
         return text.extract_properties(self.get("/query").text)
 
-    def check_version(self):
+    def check_version(self, raw_html):
         """Print a warning if the version of Trac is unsupported."""
 
-        if self.trac_version < MIN_TRAC_VERSION \
-                or self.trac_version > MAX_TRAC_VERSION:
-            version = ".".join([str(tok) for tok in self.trac_version])
+        # If we have a version in there, we likely already figure this out.
+        if self.trac_version != (0, 0):
+            return
+
+        trac_version = text.extract_trac_version(raw_html)
+
+        # We can't extract anything from this query.
+        if not trac_version:
+            return
+
+        if trac_version < MIN_TRAC_VERSION or trac_version > MAX_TRAC_VERSION:
+            version = ".".join([str(tok) for tok in trac_version])
             print("WARNING: Untested Trac version ({})".format(version))
+
+        self.trac_version = trac_version
 
     def editor(self, filename):
         """Spawn the default editor ($EDITOR env var)."""
@@ -217,6 +229,9 @@ class CartmanApp(object):
             if not message:
                 message = "{} returned {}".format(self.base_url, r)
             raise exceptions.FatalError(message)
+
+        # Check the version if we can.
+        self.check_version(r.text)
 
         return r
 
@@ -261,10 +276,6 @@ class CartmanApp(object):
         if r.status_code not in (200, 302):
             raise exceptions.LoginError("login failed on {}"
                                         .format(r.request.url))
-
-        # Grab the Trac version number, and throw a warning if not 0.12.
-        self.trac_version = text.extract_trac_version(r.text)
-        self.check_version()
 
         self.logged_in = True
 
@@ -399,6 +410,7 @@ class CartmanApp(object):
 
     def _extract_timestamps(self, raw_html):
         """Wrapper around extract_time_v0 and extract_time_v1."""
+
         if self.trac_version >= (1, 0):
             return text.extract_timestamps_v1(raw_html)
         else:
@@ -554,6 +566,12 @@ class CartmanApp(object):
         for ticket_id, description in text.extract_search_results(r.text):
             print("#{}. {}".format(ticket_id, description))
 
+    def extract_status_from_ticket_page(self, raw_html):
+        if self.trac_version >= (1, 0):
+            return text.extract_status_from_ticket_page_v1(raw_html)
+        else:
+            return text.extract_status_from_ticket_page_v0(raw_html)
+
     def run_status(self, ticket_id, status=None):
         """Updates the status of a ticket.
 
@@ -564,7 +582,6 @@ class CartmanApp(object):
 
         # Get all the available actions for this ticket
         r = self.get("/ticket/{}".format(ticket_id))
-        timestamps = self._extract_timestamps(r.text)
         statuses = text.extract_statuses(r.text)
 
         # A ``status`` was provided, try to find the exact match, else just
@@ -576,10 +593,13 @@ class CartmanApp(object):
                 raise exceptions.FatalError("bad status (for this ticket: {})"
                                             .format(", ".join(statuses)))
         else:
-            status = text.extract_status_from_ticket_page(r.text)
+            status = self.extract_status_from_ticket_page(r.text)
             print("Current status: {}".format(status))
-            print("Available statuses: {}".format(", ".join(statuses)))
+            if statuses:
+                print("Available statuses: {}".format(", ".join(statuses)))
             return
+
+        timestamps = self._extract_timestamps(r.text)
 
         if self.message:
             comment = self.message

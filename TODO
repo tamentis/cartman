@@ -39,4 +39,4 @@ Lesser features
  - add curses support to navigate tickets easily.
  - write a cartman daemon that will poll a mailbox for new emails and create
    tickets from them and later allow to reply to comments, attach files, etc.
-
+ - `status` should also return the resolution.

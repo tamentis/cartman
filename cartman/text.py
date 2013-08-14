@@ -94,7 +94,10 @@ def extract_timestamps_common(token, raw_html):
 
     """
     regex = r"""name="{}" value="([^"]+)""".format(token)
+    import pdb; pdb.set_trace()
+
     m = re.search(regex, raw_html, re.MULTILINE)
+
     if m:
         timestamp = m.group(1)
     else:
@@ -122,27 +125,39 @@ def extract_statuses(raw_html):
     :param raw_html: Dump from the ticket page.
 
     """
-    re_status = r'<input type="radio" [^<]+ name="action" value="([^"]+)'
+    re_status = r'<input type="radio" [^<]+name="action" value="([^"]+)'
     return re.findall(re_status, raw_html)
 
 
-def extract_status_from_ticket_page(raw_html):
+def extract_status_from_ticket_page_common(re_status, raw_html):
     """Given a dump of the HTML ticket page, extract the current status of
     a ticket.
+
+    TODO: return resolution and display it if any.
 
     :param raw_html: Dump for the ticket page.
 
     """
-    re_status = r'leave</label>[\s\n]*as (\w+)[\s\n]*<'
-
     m = re.search(re_status, raw_html, re.MULTILINE)
 
     if m:
         status = m.group(1)
+        # task_type = m.group(2)
+        # resolution = m.group(3)
     else:
         raise exceptions.FatalError("unable to fetch ticket status")
 
     return status
+
+
+def extract_status_from_ticket_page_v0(raw_html):
+    re_status = r'<span class="status">\((\w+) (\w+)(?:: (\w+))?\)</span>'
+    return extract_status_from_ticket_page_common(re_status, raw_html)
+
+
+def extract_status_from_ticket_page_v1(raw_html):
+    re_status = r'<span class="trac-status">[\s\n]+<a href="[^"]+">(\w+)</a>'
+    return extract_status_from_ticket_page_common(re_status, raw_html)
 
 
 def extract_properties(raw_html):

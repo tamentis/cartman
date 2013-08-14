@@ -11,6 +11,7 @@
  - test the existence of base_url instead of stack tracing.
  - create the ~/.cartman/ directory by default.
  - die with an error message if you don't have an $EDITOR env var.
+ - fix fetching current ticket status on v1.0+
 
 0.2.1 (2013-05-23)
 ==================
