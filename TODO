@@ -1,8 +1,23 @@
- - add cm search wrapping the search.
+Bugs
+====
+ - don't die if there is a trailing slash.
+
+Important features
+==================
+ - return errors from the front end (html-stripped) when they reach cartman,
+   not just in new.
  - keep the edited file until we know the delivery is successful, wrap the
    whole thing in a diaper and tell the user where to find the temporary file.
+ - find a way to read comments (tricky because there is nothing that dumps the
+   comments in their raw format in the default Trac installation).
+ - test the output of commands in the test suite.
+ - store the cookie somewhere to avoid pulling it all the time and waste time
+   in index/login.
+
+Lesser features
+===============
+ - add paging to the search command (optional).
  - use a better module for HTML parsing (e.g. BeautifulSoup4).
- - return errors to the front end (html-stripped) when then reach cartman.
  - abstract the text module behind an inheritable class, that will allow
    version specific parsing implementations.
  - add a modular backend support, could be set to:
@@ -10,9 +25,6 @@
     - xmlrpc (through the plugin)
     - db (direct database access, has to have access to the database)
     - direct (use the trac module, has to be on the installation machine)
- - don't die if there is a trailing slash.
- - find a way to read comments (tricky because there is nothing that dumps the
-   comments in their raw format in the default Trac installation).
  - create an alias system similar to mercurial::
 
     [alias]
@@ -22,8 +34,6 @@
  - improve editor handling to allow better test units
  - add query support, allowing them to be defined in the config file.
  - add curses support to navigate tickets easily.
- - store the cookie somewhere to avoid pulling it all the time and waste time
-   in index/login.
  - write a cartman daemon that will poll a mailbox for new emails and create
    tickets from them and later allow to reply to comments, attach files, etc.
 

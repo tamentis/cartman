@@ -178,3 +178,27 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+
+    def test_run_search(self):
+        args = DummyArgs("search", ["something"])
+        self.app.set_responses([
+            (200, u"""random stuff before
+                      <div>
+                      <dl id="results">
+                          <dt><a href="/any-random-project/ticket/7" class="searchable"><span class="new">#7</span>: defect: just something (new)</a></dt>
+                          <dd class="searchable">just something</dd>
+                          <dd>
+                              <span class="author">By testuser</span> -
+                              <span class="date">08/13/2013 19:06:10</span>
+                          </dd>
+                          <dt><a href="/any-random-project/ticket/6" class="searchable"><span class="new">#6</span>: defect: something is fishy (new)</a></dt>
+                          <dd class="searchable">something is fishy</dd>
+                          <dd>
+                              <span class="author">By testuser</span> -
+                              <span class="date">08/13/2013 19:06:00</span>
+                          </dd>
+                      </dl>
+                      </div>""")
+        ])
+
+        self.app.run(args)

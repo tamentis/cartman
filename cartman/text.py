@@ -24,6 +24,10 @@ from cartman import exceptions
 
 
 re_version = re.compile(r"Trac (\d+)\.(\d+)", re.MULTILINE)
+re_search_result = re.compile(r'<dt><a href="[^"]+" class="searchable">'
+                              r'<span class="\w+">#(\d+)</span>'
+                              r': ([^<]+)</a></dt>')
+re_message = re.compile(r"<p class=\"message\">([^<]+)</p>")
 
 
 def fuzzy_find(value, options):
@@ -147,6 +151,7 @@ def extract_properties(raw_html):
     extracted from the JavaScript dictionary exposed on the query page.
 
     :param raw_html: Dump from the query page.
+
     """
     re_prop = r"var properties=([^;]+)"
     prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE)
@@ -161,6 +166,7 @@ def extract_trac_version(raw_html):
     """Returns a tuple of three values representing the current Trac version.
 
     :param raw_html: Dump from any page.
+
     """
     results = re_version.findall(raw_html)
 
@@ -170,3 +176,30 @@ def extract_trac_version(raw_html):
     major, minor = tuple([int(t) for t in results[0]])
 
     return (major, minor)
+
+
+def extract_message(raw_html):
+    """Returns the content of the message element.
+
+    This element appears typically on pages with errors.
+
+    :param raw_html: Dump from any page.
+
+    """
+    results = re_message.findall(raw_html)
+
+    if not results:
+        return None
+
+    return results[0]
+
+
+def extract_search_results(raw_html):
+    """Returns the search results.
+
+    :param raw_html: Dump from any page.
+
+    """
+    results = re_search_result.findall(raw_html)
+
+    return [(int(r[0]), r[1]) for r in results]

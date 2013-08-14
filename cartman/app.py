@@ -165,12 +165,20 @@ class CartmanApp(object):
     def get(self, query_string, data=None):
         """Generates a GET query on the target Trac system.
 
+        TODO: extract the error element as message.
+
         :param query_string: Starts with a slash, part of the URL between the
                              domain and the parameters (before the ?).
         :param data: Dictionary of parameters to encode at the end of the
                      ``query_string``.
         """
-        return self.session.get(self.base_url + query_string, data=data)
+        r = self.session.get(self.base_url + query_string, data=data)
+
+        if r.status_code >= 500:
+            message = "{} returned {}".format(self.base_url, r)
+            raise exceptions.FatalError(message)
+
+        return r
 
     def post(self, query_string, data=None):
         """Generates a POST query on the target Trac system.
@@ -337,6 +345,23 @@ class CartmanApp(object):
         """
         return "\n".join([": ".join(pair) for pair in headers.items()])
 
+    def _read_comment(self):
+        """Prompt for a piece of text via the current EDITOR. Returns a string.
+        """
+        (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
+        self.editor(filename)
+        with open(filename) as fp:
+            comment = fp.read()
+        return comment
+
+    def _extract_timestamps(self, raw_html):
+        """Wrapper around extract_time_v0 and extract_time_v1."""
+        if self.trac_version >= (1, 0):
+            return text.extract_timestamps_v1(raw_html)
+        else:
+            return text.extract_timestamps_v0(raw_html)
+
+
     #
     # Command definitions
     #
@@ -431,22 +456,6 @@ class CartmanApp(object):
         print(ui.title("Priority"))
         print(", ".join(properties["priority"]["options"]) + "\n")
 
-    def _read_comment(self):
-        """Prompt for a piece of text via the current EDITOR. Returns a string.
-        """
-        (fd, filename) = tempfile.mkstemp(suffix=".cm.ticket")
-        self.editor(filename)
-        with open(filename) as fp:
-            comment = fp.read()
-        return comment
-
-    def _extract_timestamps(self, raw_html):
-        """Wrapper around extract_time_v0 and extract_time_v1."""
-        if self.trac_version >= (1, 0):
-            return text.extract_timestamps_v1(raw_html)
-        else:
-            return text.extract_timestamps_v0(raw_html)
-
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
         anything if successful. Command is cancelled if the content of the
@@ -489,6 +498,20 @@ class CartmanApp(object):
 
         if token in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
+
+    def run_search(self, *terms):
+        """Search for tickets using the given terms.
+
+        TODO: multi-page search results.
+
+        usage: cm search term
+
+        """
+        query_string = "/search?q={}".format("+".join(terms))
+
+        r = self.get(query_string)
+        for ticket_id, description in text.extract_search_results(r.text):
+            print("#{}. {}".format(ticket_id, description))
 
     def run_status(self, ticket_id, status=None):
         """Updates the status of a ticket.
@@ -672,7 +695,10 @@ class CartmanApp(object):
         r = self.post("/newticket", fields_data)
 
         if r.status_code != 200:
-            raise exceptions.RequestException("unable to create new ticket.")
+            message = text.extract_message(r.text)
+            if not message:
+                message = "unable to create new ticket"
+            raise exceptions.RequestException(message)
 
         try:
             ticket_id = int(r.url.split("/")[-1])
