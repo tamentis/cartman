@@ -1,5 +1,9 @@
-Bugs
-====
+Pending for 0.3.0
+=================
+ - store the cookie somewhere to avoid pulling it all the time and waste time
+   in index/login.
+ - alpha sort the commands
+ - find out why we have a self.login() in get_dicts().
 
 Important features
 ==================
@@ -10,8 +14,6 @@ Important features
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
  - test the output of commands in the test suite.
- - store the cookie somewhere to avoid pulling it all the time and waste time
-   in index/login.
 
 Lesser features
 ===============
