@@ -226,6 +226,26 @@ Hacking
    (avoids escaped double-quotes).
  - If an error is exceptional, let the exception rise.
 
+
+Distribute
+----------
+ - Change the version in cartman/__init__.py
+ - Commit
+ - Create a tag::
+
+    git tag -a vX.Y.Z -m 'Releasing vX.Y.Z'
+    git push --tags
+
+ - Download the file from github (release section),
+ - Sign it::
+
+    gpg --armor --detach-sig cartman-X.Y.Z.tar.gz
+
+ - Distribute on Pypi::
+
+    python setup.py sdist upload
+
+
 .. _Trac: http://trac.edgewall.org/
 .. _vim: http://www.vim.org/
 .. _mutt: http://www.mutt.org/
