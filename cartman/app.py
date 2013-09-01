@@ -13,6 +13,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import csv
+import sys
 import os
 import requests
 import tempfile
@@ -309,7 +310,8 @@ class CartmanApp(object):
 
         # And since the csv module in Python 2.7 is not unicode-friendly, we
         # encode to UTF-8.
-        data = data.encode("utf-8")
+        if sys.version < '3':
+            data = data.encode("utf-8")
 
         return csv.DictReader(data.splitlines(True), delimiter="\t")
 
