@@ -415,6 +415,11 @@ class CartmanApp(object):
         else:
             return text.extract_timestamps_v0(raw_html)
 
+    def extract_status_from_ticket_page(self, raw_html):
+        if self.trac_version >= (1, 0):
+            return text.extract_status_from_ticket_page_v1(raw_html)
+        else:
+            return text.extract_status_from_ticket_page_v0(raw_html)
 
     #
     # Command definitions
@@ -426,89 +431,6 @@ class CartmanApp(object):
     # Note that the docstring for these functions is used for the --help auto
     # documentation.
     #
-
-    def run_help(self, command="help"):
-        """Show the help for a given command.
-
-        usage: cm help command
-
-        """
-        func_name = "run_" + command
-        if hasattr(self, func_name):
-            self.print_function_help(func_name)
-            if command == "help":
-                self.print_commands_list()
-        else:
-            raise exceptions.UnknownCommand("unknown command: " + func_name)
-
-    def run_report(self, report_id=None):
-        """List tickets from a given report number.
-
-        usage: cm report ticket_id
-
-        """
-        report_id = text.validate_id(report_id)
-
-        query_string = "/report/{}?format=tab".format(report_id)
-
-        for t in self.get_tickets(query_string):
-            print(t.format_title())
-
-    def run_reports(self):
-        """List reports available in the system.
-
-        usage: cm reports
-
-        """
-        for d in self.get_dicts("/report?format=tab"):
-            print("#{report}. {title}".format(**d))
-
-    def run_view(self, ticket_id):
-        """Display a ticket summary.
-
-        usage: cm view ticket_id
-
-        """
-        ticket_id = text.validate_id(ticket_id)
-
-        query_string = "/ticket/{}?format=tab".format(ticket_id)
-
-        t = next(self.get_tickets(query_string))
-        title = t.format_title()
-
-        print(ui.title(title))
-        print("")
-
-        print(t.description)
-
-    def run_open(self, ticket_id):
-        """Open a ticket in your browser.
-
-        usage: cm open ticket_id
-        """
-        ticket_id = text.validate_id(ticket_id)
-
-        self.open_in_browser(ticket_id)
-
-    def run_properties(self):
-        """Lists the system's properties (Milestone, Component, etc.).
-
-        usage: cm properties
-
-        """
-        properties = self.get_properties()
-
-        print(ui.title("Milestones"))
-        print(", ".join(properties["milestone"]["options"]) + "\n")
-
-        print(ui.title("Components"))
-        print(", ".join(properties["component"]["options"]) + "\n")
-
-        print(ui.title("Status"))
-        print(", ".join(properties["status"]["options"]) + "\n")
-
-        print(ui.title("Priority"))
-        print(", ".join(properties["priority"]["options"]) + "\n")
 
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
@@ -551,66 +473,19 @@ class CartmanApp(object):
         if token in r.text or r.status_code != 200:
             raise exceptions.FatalError("unable to save comment")
 
-    def run_search(self, *terms):
-        """Search for tickets using the given terms.
+    def run_help(self, command="help"):
+        """Show the help for a given command.
 
-        TODO: multi-page search results.
-
-        usage: cm search term
+        usage: cm help command
 
         """
-        query_string = "/search?q={}".format("+".join(terms))
-
-        r = self.get(query_string)
-        for ticket_id, description in text.extract_search_results(r.text):
-            print("#{}. {}".format(ticket_id, description))
-
-    def extract_status_from_ticket_page(self, raw_html):
-        if self.trac_version >= (1, 0):
-            return text.extract_status_from_ticket_page_v1(raw_html)
+        func_name = "run_" + command
+        if hasattr(self, func_name):
+            self.print_function_help(func_name)
+            if command == "help":
+                self.print_commands_list()
         else:
-            return text.extract_status_from_ticket_page_v0(raw_html)
-
-    def run_status(self, ticket_id, status=None):
-        """Updates the status of a ticket.
-
-        usage: cm status ticket_id [new_status]
-
-        """
-        ticket_id = text.validate_id(ticket_id)
-
-        # Get all the available actions for this ticket
-        r = self.get("/ticket/{}".format(ticket_id))
-        statuses = text.extract_statuses(r.text)
-
-        # Just display current status.
-        if not status:
-            status = self.extract_status_from_ticket_page(r.text)
-            print("Current status: {}".format(status))
-            if statuses:
-                print("Available statuses: {}".format(", ".join(statuses)))
-            return
-
-        if not status:
-            raise exceptions.FatalError("bad status (acceptable: {})"
-                                        .format(", ".join(statuses)))
-
-        if self.message:
-            comment = self.message
-        elif self.add_comment:
-            comment = self._read_comment()
-        else:
-            comment = ""
-
-        # Not having a value for submit causes Trac to ignore the request.
-        data = {
-            "action": status,
-            "comment": comment,
-            "submit": "anything",
-        }
-        data.update(self._extract_timestamps(r.text))
-
-        r = self.post("/ticket/{}".format(ticket_id), data)
+            raise exceptions.UnknownCommand("unknown command: " + func_name)
 
     def run_new(self, owner=None):
         """Create a new ticket and return its id if successful.
@@ -757,3 +632,127 @@ class CartmanApp(object):
 
         self.open_in_browser_on_request(ticket_id)
         print("ticket #{} created".format(ticket_id))
+
+    def run_open(self, ticket_id):
+        """Open a ticket in your browser.
+
+        usage: cm open ticket_id
+        """
+        ticket_id = text.validate_id(ticket_id)
+
+        self.open_in_browser(ticket_id)
+
+    def run_properties(self):
+        """Lists the system's properties (Milestone, Component, etc.).
+
+        usage: cm properties
+
+        """
+        properties = self.get_properties()
+
+        print(ui.title("Milestones"))
+        print(", ".join(properties["milestone"]["options"]) + "\n")
+
+        print(ui.title("Components"))
+        print(", ".join(properties["component"]["options"]) + "\n")
+
+        print(ui.title("Status"))
+        print(", ".join(properties["status"]["options"]) + "\n")
+
+        print(ui.title("Priority"))
+        print(", ".join(properties["priority"]["options"]) + "\n")
+
+    def run_report(self, report_id=None):
+        """List tickets from a given report number.
+
+        usage: cm report ticket_id
+
+        """
+        report_id = text.validate_id(report_id)
+
+        query_string = "/report/{}?format=tab".format(report_id)
+
+        for t in self.get_tickets(query_string):
+            print(t.format_title())
+
+    def run_reports(self):
+        """List reports available in the system.
+
+        usage: cm reports
+
+        """
+        for d in self.get_dicts("/report?format=tab"):
+            print("#{report}. {title}".format(**d))
+
+    def run_search(self, *terms):
+        """Search for tickets using the given terms.
+
+        TODO: multi-page search results.
+
+        usage: cm search term
+
+        """
+        query_string = "/search?q={}".format("+".join(terms))
+
+        r = self.get(query_string)
+        for ticket_id, description in text.extract_search_results(r.text):
+            print("#{}. {}".format(ticket_id, description))
+
+    def run_status(self, ticket_id, status=None):
+        """Updates the status of a ticket.
+
+        usage: cm status ticket_id [new_status]
+
+        """
+        ticket_id = text.validate_id(ticket_id)
+
+        # Get all the available actions for this ticket
+        r = self.get("/ticket/{}".format(ticket_id))
+        statuses = text.extract_statuses(r.text)
+
+        # Just display current status.
+        if not status:
+            status = self.extract_status_from_ticket_page(r.text)
+            print("Current status: {}".format(status))
+            if statuses:
+                print("Available statuses: {}".format(", ".join(statuses)))
+            return
+
+        if not status:
+            raise exceptions.FatalError("bad status (acceptable: {})"
+                                        .format(", ".join(statuses)))
+
+        if self.message:
+            comment = self.message
+        elif self.add_comment:
+            comment = self._read_comment()
+        else:
+            comment = ""
+
+        # Not having a value for submit causes Trac to ignore the request.
+        data = {
+            "action": status,
+            "comment": comment,
+            "submit": "anything",
+        }
+        data.update(self._extract_timestamps(r.text))
+
+        r = self.post("/ticket/{}".format(ticket_id), data)
+
+    def run_view(self, ticket_id):
+        """Display a ticket summary.
+
+        usage: cm view ticket_id
+
+        """
+        ticket_id = text.validate_id(ticket_id)
+
+        query_string = "/ticket/{}?format=tab".format(ticket_id)
+
+        t = next(self.get_tickets(query_string))
+        title = t.format_title()
+
+        print(ui.title(title))
+        print("")
+
+        print(t.description)

@@ -27,7 +27,7 @@ def main():
 
     parser = argparse.ArgumentParser(prog="cm")
     parser.add_argument("command",
-                        help="required (try commands)")
+                        help="required (try help)")
     parser.add_argument("parameters", nargs="*",
                         help="specific for each commands")
     parser.add_argument("-c", dest="add_comment", action="store_true",

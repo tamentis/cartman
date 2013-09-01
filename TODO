@@ -1,8 +1,6 @@
 Pending for 0.3.0
 =================
- - fix the ''commands'' command..
- - alpha sort the commands
- - find out why we have a self.login() in get_dicts().
+ - test things
 
 Important features
 ==================
