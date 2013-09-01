@@ -103,11 +103,17 @@ class CartmanApp(object):
         self.login()
 
         try:
-            func(*args.parameters)
+            output = func(*args.parameters)
         except exceptions.InvalidParameter as ex:
             print("error: {}\n".format(ex))
             self.print_function_help(func_name)
             return
+
+        self.print_output(output)
+
+    def print_output(self, output):
+        if output:
+            print("\n".join(output))
 
     def ensure_directories(self):
         """Creates a ~/.cartman/ if none exist."""
@@ -638,7 +644,8 @@ class CartmanApp(object):
             raise exceptions.RequestException("returned ticket_id is invalid.")
 
         self.open_in_browser_on_request(ticket_id)
-        print("ticket #{} created".format(ticket_id))
+
+        return ["ticket #{} created".format(ticket_id)]
 
     def run_open(self, ticket_id):
         """Open a ticket in your browser.
@@ -657,17 +664,20 @@ class CartmanApp(object):
         """
         properties = self.get_properties()
 
-        print(ui.title("Milestones"))
-        print(", ".join(properties["milestone"]["options"]) + "\n")
-
-        print(ui.title("Components"))
-        print(", ".join(properties["component"]["options"]) + "\n")
-
-        print(ui.title("Status"))
-        print(", ".join(properties["status"]["options"]) + "\n")
-
-        print(ui.title("Priority"))
-        print(", ".join(properties["priority"]["options"]) + "\n")
+        return [
+            ui.title("Milestones"),
+            ", ".join(properties["milestone"]["options"]),
+            "",
+            ui.title("Components"),
+            ", ".join(properties["component"]["options"]),
+            "",
+            ui.title("Status"),
+            ", ".join(properties["status"]["options"]),
+            "",
+            ui.title("Priority"),
+            ", ".join(properties["priority"]["options"]),
+            "",
+        ]
 
     def run_report(self, report_id=None):
         """List tickets from a given report number.
@@ -675,12 +685,15 @@ class CartmanApp(object):
         usage: cm report ticket_id
 
         """
+        output = []
         report_id = text.validate_id(report_id)
 
         query_string = "/report/{}?format=tab".format(report_id)
 
         for t in self.get_tickets(query_string):
-            print(t.format_title())
+            output.append(t.format_title())
+
+        return output
 
     def run_reports(self):
         """List reports available in the system.
@@ -688,8 +701,12 @@ class CartmanApp(object):
         usage: cm reports
 
         """
+        output = []
+
         for d in self.get_dicts("/report?format=tab"):
-            print("#{report}. {title}".format(**d))
+            output.append("#{report}. {title}".format(**d))
+
+        return output
 
     def run_search(self, *terms):
         """Search for tickets using the given terms.
@@ -699,11 +716,14 @@ class CartmanApp(object):
         usage: cm search term
 
         """
+        output = []
         query_string = "/search?q={}".format("+".join(terms))
 
         r = self.get(query_string)
         for ticket_id, description in text.extract_search_results(r.text):
-            print("#{}. {}".format(ticket_id, description))
+            output.append("#{}. {}".format(ticket_id, description))
+
+        return output
 
     def run_status(self, ticket_id, status=None):
         """Updates the status of a ticket.
@@ -711,6 +731,7 @@ class CartmanApp(object):
         usage: cm status ticket_id [new_status]
 
         """
+        output = []
         ticket_id = text.validate_id(ticket_id)
 
         # Get all the available actions for this ticket
@@ -720,10 +741,10 @@ class CartmanApp(object):
         # Just display current status.
         if not status:
             status = self.extract_status_from_ticket_page(r.text)
-            print("Current status: {}".format(status))
+            output.append("Current status: {}".format(status))
             if statuses:
-                print("Available statuses: {}".format(", ".join(statuses)))
-            return
+                output.append("Available statuses: {}".format(", ".join(statuses)))
+            return output
 
         if not status:
             raise exceptions.FatalError("bad status (acceptable: {})"
@@ -759,7 +780,8 @@ class CartmanApp(object):
         t = next(self.get_tickets(query_string))
         title = t.format_title()
 
-        print(ui.title(title))
-        print("")
-
-        print(t.description)
+        return [
+            ui.title(title),
+            "",
+            t.description,
+        ]

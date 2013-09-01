@@ -23,6 +23,7 @@ class TestableApp(app.CartmanApp):
         app.CartmanApp.__init__(self)
         self.browser = DummyBrowser()
         self.trac_version = (0, 12)
+        self.output = None
 
     def editor(self, filename):
         pass
@@ -49,6 +50,10 @@ class TestableApp(app.CartmanApp):
 
     def get(self, query_string, data=None):
         return self.responses.pop(0)
+
+    def print_output(self, output):
+        """Store the output for testing purpose."""
+        self.output = output
 
     post = get
 
@@ -93,18 +98,30 @@ class AppUnitTest(unittest.TestCase):
     def test_run_report(self):
         args = DummyArgs("report", ["1"])
         self.app.set_responses([
-            (200, u"""id\tstuff\n1\twoot"""),
+            (200, u"""id\tsummary\treporter\tdescription\n"""
+                  u"""1\twoot\tsome_reporter\tany text\n"""
+                  u"""2\tnope\tother_dude\tsomething\n"""),
         ])
 
         self.app.run(args)
+        self.assertEquals(self.app.output, [
+            '#1. woot (some_reporter)',
+            '#2. nope (other_dude)',
+        ])
 
     def test_run_view(self):
         args = DummyArgs("view", ["1"])
         self.app.set_responses([
-            (200, u"""id\tstuff\n1\twoot"""),
+            (200, u"""id\tsummary\treporter\tdescription\n"""
+                  u"""1\twoot\tsome_reporter\tany text"""),
         ])
 
         self.app.run(args)
+        self.assertEquals(self.app.output, [
+            '#1. woot (some_reporter)\n------------------------',
+            '',
+            'any text'
+        ])
 
     def test_run_open_on_request(self):
         args = DummyArgs("open", ["1"])
@@ -121,6 +138,20 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+        self.assertEquals(self.app.output, [
+            'Milestones\n----------',
+            u'meh1, meh2',
+            '',
+            'Components\n----------',
+            u'com1, com2',
+            '',
+            'Status\n------',
+            u'opened, reopened, closed',
+            '',
+            'Priority\n--------',
+            u'1, 2, 3',
+            '',
+        ])
 
     def test_run_comment(self):
         args = DummyArgs("comment", ["1"])
@@ -131,6 +162,7 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+        self.assertIsNone(self.app.output)
 
     def test_run_comment_no_message(self):
         args = DummyArgs("comment", ["1"])
@@ -153,6 +185,7 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+        self.assertIsNone(self.app.output)
 
     def test_run_status_get_v1(self):
         args = DummyArgs("status", ["1"])
@@ -173,7 +206,7 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
-        # TODO: test return...
+        self.assertEquals(self.app.output, ['Current status: accepted'])
 
     def test_run_status_get_v0(self):
         args = DummyArgs("status", ["1"])
@@ -188,7 +221,7 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
-        # TODO: test return...
+        self.assertEquals(self.app.output, ['Current status: new'])
 
     def test_run_new(self):
         self.skipTest("too much file-system interaction, code needs work.")
@@ -227,3 +260,7 @@ class AppUnitTest(unittest.TestCase):
         ])
 
         self.app.run(args)
+        self.assertEquals(self.app.output, [
+            '#7. defect: just something (new)',
+            '#6. defect: something is fishy (new)',
+        ])
