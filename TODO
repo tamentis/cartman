@@ -1,7 +1,3 @@
-Pending for 0.3.0
-=================
- - test things
-
 Important features
 ==================
  - return errors from the front end (html-stripped) when they reach cartman,

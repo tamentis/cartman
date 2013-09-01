@@ -682,7 +682,7 @@ class CartmanApp(object):
     def run_report(self, report_id=None):
         """List tickets from a given report number.
 
-        usage: cm report ticket_id
+        usage: cm report report_id
 
         """
         output = []
