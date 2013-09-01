@@ -142,7 +142,7 @@ class AppUnitTest(unittest.TestCase):
 
         self.assertRaises(exceptions.FatalError, self.app.run, args)
 
-    def test_run_status(self):
+    def test_run_status_set(self):
         args = DummyArgs("status", ["1", "reopen"])
         self.app.set_responses([
             (200, u"""<input name="ts" value="1" />
@@ -154,16 +154,36 @@ class AppUnitTest(unittest.TestCase):
 
         self.app.run(args)
 
-    def test_run_status(self):
+    def test_run_status_get_v1(self):
+        args = DummyArgs("status", ["1"])
+        self.app.trac_version = (1,0)
+        self.app.set_responses([
+            (200, u"""
+                   <h2>
+                     <a href="/testtrac-1.0.1/ticket/1" class="trac-id">#1</a>
+                     <span class="trac-status">
+                       <a href="/testtrac-1.0.1/query?status=accepted">accepted</a>
+                     </span>
+                     <span class="trac-type">
+                       <a href="/testtrac-1.0.1/query?status=!closed&amp;type=defect">defect</a>
+                     </span>
+                   </h2>
+                   """),
+            (200, u""), # post
+        ])
+
+        self.app.run(args)
+        # TODO: test return...
+
+    def test_run_status_get_v0(self):
         args = DummyArgs("status", ["1"])
         self.app.set_responses([
-            (200, u"""hemene, hemene <label>leave</label>
-            as stuffy
-            </input>
-            <input name="ts" value="1" />
-                     <input type="radio" stuff name="action" value="reopen" />
-                     <input type="radio" stuff name="action" value="close" />
-                     """),
+            (200, u"""
+                   <h1 id="trac-ticket-title">
+                       <a href="/testtrac-0.12.5/ticket/7">Ticket #7</a>
+                       <span class="status">(new defect)</span>
+                   </h1>
+                   """),
             (200, u""), # post
         ])
 

@@ -100,16 +100,3 @@ class TextUnitTest(unittest.TestCase):
             "another": "one",
             "bites": [ "the", "dust" ]
         })
-
-    def test_extract_status_nope(self):
-        raw_html = """hemene, hemene"""
-        self.assertRaises(exceptions.FatalError,
-                          text.extract_status_from_ticket_page, raw_html)
-
-    def test_extract_status_yup(self):
-        raw_html = """hemene, hemene <label>leave</label>
-        as stuffy
-        </input>"""
-        self.assertEquals(text.extract_status_from_ticket_page(raw_html),
-                          "stuffy")
-
