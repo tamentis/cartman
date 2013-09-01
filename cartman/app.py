@@ -123,7 +123,7 @@ class CartmanApp(object):
         if os.path.exists(expanded_directory):
             return
 
-        os.mkdir(expanded_directory, 0750)
+        os.mkdir(expanded_directory, 0o750)
 
     def read_config(self):
         """Populate the instance with settings for the config file.
