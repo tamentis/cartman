@@ -199,7 +199,8 @@ class CartmanApp(object):
         """Spawn the default editor ($EDITOR env var)."""
 
         if not os.getenv("EDITOR"):
-            raise FatalError("unable to get an EDITOR environment variable")
+            raise exceptions.FatalError("unable to get an EDITOR environment "
+                                        "variable")
 
         os.system("$EDITOR '{}'".format(filename))
 
@@ -215,6 +216,9 @@ class CartmanApp(object):
                              domain and the parameters (before the ?).
         :param data: Dictionary of parameters to encode at the end of the
                      ``query_string``.
+        :param handle_errors: Crash with a proper exception according to the
+                              HTTP return code (default: True).
+
         """
         r = self.session.get(self.base_url + query_string, data=data)
 
@@ -229,7 +233,7 @@ class CartmanApp(object):
 
         return r
 
-    def post(self, query_string, data=None):
+    def post(self, query_string, data=None, handle_errors=True):
         """Generates a POST query on the target Trac system.
 
         This also alters the given data to include the form token stored on the
@@ -239,6 +243,9 @@ class CartmanApp(object):
                              domain and the parameters (before the ?).
         :param data: Dictionary of parameters to encode and transmit to the
                      target page.
+        :param handle_errors: Crash with a proper exception according to the
+                              HTTP return code (default: True).
+
         """
         if data:
             data["__FORM_TOKEN"] = self.get_form_token()
