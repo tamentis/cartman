@@ -199,7 +199,7 @@ Quick and dirty if you are not familiar with Python packaging::
 Requirements
 ------------
  - Python 2.7+, 3.3+ (not 3.2, not 2.6)
- - python-requests 0.6 and above
+ - python-requests 1.2 and above
 
 
 Compatibility
