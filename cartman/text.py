@@ -94,7 +94,6 @@ def extract_timestamps_common(token, raw_html):
 
     """
     regex = r"""name="{}" value="([^"]+)""".format(token)
-    import pdb; pdb.set_trace()
 
     m = re.search(regex, raw_html, re.MULTILINE)
 
@@ -203,10 +202,10 @@ def extract_message(raw_html):
     """
     results = re_message.findall(raw_html)
 
-    if not results:
-        return None
+    if results:
+        return results[0]
 
-    return results[0]
+    return None
 
 
 def extract_search_results(raw_html):

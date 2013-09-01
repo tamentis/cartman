@@ -1,9 +1,6 @@
 Pending for 0.3.0
 =================
- - store the cookie somewhere to avoid pulling it all the time and waste time
-   in index/login. (work in progress --- removed all the self.login()). Now we
-   need to catch the 403's and run self.login if we haven't yet. Basically
-   first rely on cookies, fall back to login, then fail.
+ - fix the ''commands'' command..
  - alpha sort the commands
  - find out why we have a self.login() in get_dicts().
 
@@ -15,6 +12,8 @@ Important features
    whole thing in a diaper and tell the user where to find the temporary file.
  - find a way to read comments (tricky because there is nothing that dumps the
    comments in their raw format in the default Trac installation).
+ - find a way to automatically test the whole thing against different versions
+   of trac (install, venv, commands, repeat?)
  - test the output of commands in the test suite.
 
 Lesser features

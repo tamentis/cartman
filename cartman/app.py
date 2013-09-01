@@ -18,7 +18,6 @@ import requests
 import tempfile
 import webbrowser
 import email.parser
-import cookielib
 from collections import OrderedDict
 
 from cartman.compat import configparser
@@ -29,7 +28,6 @@ from cartman import text
 
 
 BASE_DIRECTORY = "~/.cartman"
-COOKIEJAR_PATH = os.path.expanduser(os.path.join(BASE_DIRECTORY, "cookies"))
 CONFIG_LOCATIONS = [
     os.path.expanduser(os.path.join(BASE_DIRECTORY, "config")),
     "/etc/cartmanrc",
@@ -88,10 +86,6 @@ class CartmanApp(object):
         self.ensure_directories()
         self.read_config()
         self.session = requests.session()
-        self.session.cookies = cookielib.LWPCookieJar(filename=COOKIEJAR_PATH)
-
-        if os.path.exists(COOKIEJAR_PATH):
-            self.session.cookies.load(ignore_discard=True)
 
         auth_class = AUTH_TYPES[self.auth_type]
         self.session.auth = auth_class(self.username, self.password)
@@ -106,14 +100,14 @@ class CartmanApp(object):
             self.print_function_help(func_name)
             return
 
+        self.login()
+
         try:
             func(*args.parameters)
         except exceptions.InvalidParameter as ex:
             print("error: {}\n".format(ex))
             self.print_function_help(func_name)
             return
-
-        self.session.cookies.save(ignore_discard=True)
 
     def ensure_directories(self):
         """Creates a ~/.cartman/ if none exist."""
@@ -212,7 +206,7 @@ class CartmanApp(object):
     def input(self, prompt):
         return raw_input(prompt)
 
-    def get(self, query_string, data=None):
+    def get(self, query_string, data=None, handle_errors=True):
         """Generates a GET query on the target Trac system.
 
         TODO: extract all the possible error elements as message.
@@ -224,7 +218,7 @@ class CartmanApp(object):
         """
         r = self.session.get(self.base_url + query_string, data=data)
 
-        if r.status_code >= 400:
+        if r.status_code >= 400 and handle_errors:
             message = text.extract_message(r.text)
             if not message:
                 message = "{} returned {}".format(self.base_url, r)
@@ -248,7 +242,16 @@ class CartmanApp(object):
         """
         if data:
             data["__FORM_TOKEN"] = self.get_form_token()
-        return self.session.post(self.base_url + query_string, data=data)
+
+        r = self.session.post(self.base_url + query_string, data=data)
+
+        if r.status_code >= 400 and handle_errors:
+            message = text.extract_message(r.text)
+            if not message:
+                message = "{} returned {}".format(self.base_url, r)
+            raise exceptions.FatalError(message)
+
+        return r
 
     def login(self):
         """Ensure the current session is logged-in, accessing the main page.
@@ -262,20 +265,16 @@ class CartmanApp(object):
 
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
-        r = self.get("/login")
+        r = self.get("/login", handle_errors=False)
 
-        if r.status_code == 401:
-            msg = ("login failed on {}. You might be using wrong "
-                   "username/password combo or wrong auth type"
+        if r.status_code not in (200, 302):
+            msg = ("login failed on {} (bad user, password or auth type)"
                    .format(r.request.url))
             raise exceptions.LoginError(msg)
 
+        # Load a page to get the new cookies.
         if r.status_code != 302:
             r = self.get("/")
-
-        if r.status_code not in (200, 302):
-            raise exceptions.LoginError("login failed on {}"
-                                        .format(r.request.url))
 
         self.logged_in = True
 
@@ -584,22 +583,17 @@ class CartmanApp(object):
         r = self.get("/ticket/{}".format(ticket_id))
         statuses = text.extract_statuses(r.text)
 
-        # A ``status`` was provided, try to find the exact match, else just
-        # display the current status for this ticket, and the available ones.
-        if status:
-            status = text.fuzzy_find(status, statuses)
-
-            if not status:
-                raise exceptions.FatalError("bad status (for this ticket: {})"
-                                            .format(", ".join(statuses)))
-        else:
+        # Just display current status.
+        if not status:
             status = self.extract_status_from_ticket_page(r.text)
             print("Current status: {}".format(status))
             if statuses:
                 print("Available statuses: {}".format(", ".join(statuses)))
             return
 
-        timestamps = self._extract_timestamps(r.text)
+        if not status:
+            raise exceptions.FatalError("bad status (acceptable: {})"
+                                        .format(", ".join(statuses)))
 
         if self.message:
             comment = self.message
@@ -608,16 +602,15 @@ class CartmanApp(object):
         else:
             comment = ""
 
+        # Not having a value for submit causes Trac to ignore the request.
         data = {
             "action": status,
             "comment": comment,
+            "submit": "anything",
         }
-        data.update(timestamps)
+        data.update(self._extract_timestamps(r.text))
 
         r = self.post("/ticket/{}".format(ticket_id), data)
-
-        if "system-message" in r.text or r.status_code != 200:
-            raise exceptions.FatalError("unable to set status")
 
     def run_new(self, owner=None):
         """Create a new ticket and return its id if successful.

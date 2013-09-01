@@ -2,8 +2,6 @@
 ==================
 
  - added ``search`` command.
- - added support for persisted cookies, allowing for faster access time (less
-   login calls).
  - crash properly and early when trac return error 500.
  - crash with a descriptive message when you lack permission to create a
    ticket.
