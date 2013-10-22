@@ -15,6 +15,7 @@
 import csv
 import sys
 import os
+import subprocess
 import requests
 import tempfile
 import webbrowser
@@ -159,6 +160,11 @@ class CartmanApp(object):
             raise exceptions.ConfigError(msg)
         self.auth_type = auth_type
 
+        if cp.has_option(self.site, "editor"):
+            self.config_editor = cp.get(self.site, "editor")
+        else:
+            self.config_editor = os.getenv("EDITOR")
+
         self.required_fields = ["To", "Component", "Subject", "Priority"]
 
     def get_form_token(self):
@@ -203,13 +209,17 @@ class CartmanApp(object):
         self.trac_version = trac_version
 
     def editor(self, filename):
-        """Spawn the default editor ($EDITOR env var)."""
+        """Spawn the default editor ($EDITOR env var or editor configuration
+        item)."""
 
-        if not os.getenv("EDITOR"):
-            raise exceptions.FatalError("unable to get an EDITOR environment "
-                                        "variable")
+        if not self.config_editor:
+            raise exceptions.FatalError("no editor configured (EDITOR "
+                                        "environment variable or editor "
+                                        "configuration item)")
 
-        os.system("$EDITOR '{}'".format(filename))
+        if subprocess.call([self.config_editor, filename]) != 0:
+            raise exceptions.FatalError("there was a problem running the "
+                                        "editor")
 
     def input(self, prompt):
         return raw_input(prompt)
