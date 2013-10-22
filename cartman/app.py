@@ -666,20 +666,17 @@ class CartmanApp(object):
         """
         properties = self.get_properties()
 
-        return [
-            ui.title("Milestones"),
-            ", ".join(properties["milestone"]["options"]),
-            "",
-            ui.title("Components"),
-            ", ".join(properties["component"]["options"]),
-            "",
-            ui.title("Status"),
-            ", ".join(properties["status"]["options"]),
-            "",
-            ui.title("Priority"),
-            ", ".join(properties["priority"]["options"]),
-            "",
-        ]
+        output = []
+        for title, prop in (("Milestones", "milestone"),
+                ("Components", "component"),
+                ("Status", "status"),
+                ("Priorities", "priority")):
+            if prop in properties:
+                output.extend([
+                    ui.title(title),
+                    ", ".join(properties[prop]["options"]),
+                    ""])
+        return output
 
     def run_report(self, report_id=None):
         """List tickets from a given report number.

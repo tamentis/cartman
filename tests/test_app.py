@@ -148,7 +148,7 @@ class AppUnitTest(unittest.TestCase):
             'Status\n------',
             u'opened, reopened, closed',
             '',
-            'Priority\n--------',
+            'Priorities\n----------',
             u'1, 2, 3',
             '',
         ])
