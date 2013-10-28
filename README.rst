@@ -45,6 +45,7 @@ Optional Settings:
 
  - auth_type
  - verify_ssl_cert
+ - editor
 
 The ``auth_type`` will force cartman to use the give authtication type.
 Currently supported auth values are: basic, digest. If not specified defaults
@@ -52,6 +53,8 @@ to basic (which is the most unsafe option).
 
 The ``verify_ssl_cert`` will force cartman to access an SSL site with a
 self-signed or invalid SSL certificate. Use this with care.
+
+The ``editor`` will override the editor defined in ``$EDITOR``.
 
 
 Command walk through
