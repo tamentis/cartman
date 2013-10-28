@@ -447,6 +447,62 @@ class CartmanApp(object):
     # documentation.
     #
 
+    def run_change(self, ticket_id, *values):
+        """Make change to the given ticket_id. This command does not return
+        anything if successful.
+
+        TODO: support spanning an editor to change field values.
+
+        usage: cm change ticket_id field=value [field=value...]
+
+        """
+        ticket_id = text.validate_id(ticket_id)
+
+        if not values:
+            raise exceptions.InvalidParameter("should provide at least one "
+                                              "field change")
+        fields_data = { }
+        for v in values:
+            s = v.split('=', 1)
+            if len(s) != 2:
+                raise exceptions.InvalidParameter(
+                        "invalid value '{}', should be a field=value "
+                        "pair".format(v))
+            field = s[0].strip()
+            value = s[1]
+            fields_data["field_" + field] = value
+
+        # Load the timestamps from the ticket page.
+        r = self.get("/ticket/{}".format(ticket_id))
+        timestamps = self._extract_timestamps(r.text)
+
+        if self.message:
+            comment = self.message
+        elif self.add_comment:
+            comment = self._read_comment()
+        else:
+            comment = ""
+
+        data = {
+            "action": "leave",
+            "comment": comment,
+            "submit": "Submit changes",
+        }
+        data.update(timestamps)
+        data.update(fields_data)
+
+        r = self.post("/ticket/{}".format(ticket_id), data)
+
+        # Starting from 1.0+, the system-message element is always on the page,
+        # only the style is changed.
+        if self.trac_version >= (1, 0):
+            token = 'system-message" style=""'
+        else:
+            token = "system-message"
+
+        if token in r.text or r.status_code != 200:
+            raise exceptions.FatalError("unable to save change")
+
     def run_comment(self, ticket_id):
         """Add a comment to the given ticket_id. This command does not return
         anything if successful. Command is cancelled if the content of the
