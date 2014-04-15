@@ -95,8 +95,20 @@ class TextUnitTest(unittest.TestCase):
     def test_extract_properties_found(self):
         raw_html = """hemene, hemene
         var properties={ "another": "one", "bites": ["the", "dust"] };
+        var modes={};
         """
         self.assertEquals(text.extract_properties(raw_html), {
             "another": "one",
             "bites": [ "the", "dust" ]
+        })
+
+    def test_extract_properties_found_with_semicolon(self):
+        raw_html = """hemene, hemene
+        var properties={ "another": "one", "bites": ["the", "d;ust"] };
+        var modes={};
+        </script>Other; semi-colons; to make sure; we don't break.
+        """
+        self.assertEquals(text.extract_properties(raw_html), {
+            "another": "one",
+            "bites": [ "the", "d;ust" ]
         })

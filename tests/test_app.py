@@ -80,7 +80,7 @@ class AppUnitTest(unittest.TestCase):
             "status": {"options": [ "opened", "reopened", "closed"]},
             "type": {"options": [ "opened", "reopened", "closed"]},
             "priority": {"options": [ "1", "2", "3"]}
-        };"""
+        }; var modes={}; </script>Any; random; text."""
 
     def setUp(self):
         app.CONFIG_LOCATIONS = [ "./tests/cartmanrc.tests" ]

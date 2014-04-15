@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2013 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2014 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -167,8 +167,8 @@ def extract_properties(raw_html):
     :param raw_html: Dump from the query page.
 
     """
-    re_prop = r"var properties=([^;]+)"
-    prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE)
+    re_prop = r"var properties=(.+);\s+var modes="
+    prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE|re.DOTALL)
 
     if len(prop_tokens) < 1:
         return {}
