@@ -1,5 +1,6 @@
 Important features
 ==================
+ - create tickets from stdin instead of an editor (for automation).
  - return errors from the front end (html-stripped) when they reach cartman,
    not just in new.
  - keep the edited file until we know the delivery is successful, wrap the
