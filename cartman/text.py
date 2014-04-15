@@ -167,7 +167,7 @@ def extract_properties(raw_html):
     :param raw_html: Dump from the query page.
 
     """
-    re_prop = r"var properties=([^;]+)"
+    re_prop = r"var properties=(.+);"
     prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE)
 
     if len(prop_tokens) < 1:
