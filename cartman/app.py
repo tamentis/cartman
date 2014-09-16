@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2013 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2014 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -732,6 +732,14 @@ class CartmanApp(object):
         """
         properties = self.get_properties()
 
+        def extract_options(prop):
+            options = []
+            options += prop["options"]
+            if "optgroups" in prop:
+                for optgroup in prop["optgroups"]:
+                    options += optgroup["options"]
+            return options
+
         output = []
         for title, prop in (("Milestones", "milestone"),
                 ("Components", "component"),
@@ -740,7 +748,7 @@ class CartmanApp(object):
             if prop in properties:
                 output.extend([
                     ui.title(title),
-                    ", ".join(properties[prop]["options"]),
+                    ", ".join(extract_options(properties[prop])),
                     ""])
         return output
 
