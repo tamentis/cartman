@@ -4,6 +4,7 @@
  - add a configuration item to define the editor (by Nicolas Schodet <nico@ni.fr.eu.org>).
  - fix the parsing of properties when one of them contains a semi-colon (thanks
    to Josh Strange <josh@joshstrange.com>).
+ - fix property lookup (including option groups for milestone lookup on 1.0).
 
 0.2.2 (2013-09-01)
 ==================
