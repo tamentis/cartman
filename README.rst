@@ -213,13 +213,19 @@ Compatibility
 
 Hacking
 -------
- - Create a temp Trac for testing purpose (in virtualenv)::
+ - The following command will create one virtualenv and sandbox for each latest
+   0.12 and 1.0 releases of Trac::
 
-    $ pip install trac
-    $ trac-admin testtrac initenv
-    $ trac-admin testtrac permission add testuser TRAC_ADMIN
-    $ htpasswd -b -c -m htpasswd testuser testpass
-    $ tracd testtrac -p 8080 --basic-auth=testtrac,htpasswd,testrealm
+    $ ./tools/mkenv.sh
+
+ - You can then serve one or the other using, the default admin user/pass is
+   sandbox/sandbox::
+
+    $ ./tools/serve-0.12.sh
+
+    -OR-
+
+    $ ./tools/serve-1.0.sh
 
  - Follow PEP-8, existing style then the following notes.
  - For dictionaries, lists: keep commas after each items, closing bracket
