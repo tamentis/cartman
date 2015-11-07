@@ -808,8 +808,6 @@ class CartmanApp(object):
         query_string = "/timeline?ticket=on"
         if daysback: query_string += "&daysback={}".format(daysback)
 
-        print query_string
-
         r = self.get(query_string)
         for item, description in text.extract_timeline_items(r.text):
             output.append(u"{}. {}".format(item, description))
