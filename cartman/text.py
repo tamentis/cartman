@@ -28,6 +28,10 @@ re_search_result = re.compile(r'<dt><a href="[^"]+" class="searchable">'
                               r'<span class="\w+">#(\d+)</span>'
                               r': ([^<]+)</a></dt>')
 re_message = re.compile(r"<p class=\"message\">([^<]+)</p>")
+re_timeline_items = re.compile(
+                              r'<span class="time">[^<]+</span>[^<]*'
+                              r'<em[^>]*>([^<]*)</em>(.*)'
+                              )
 
 
 def fuzzy_find(value, options):
@@ -217,3 +221,15 @@ def extract_search_results(raw_html):
     results = re_search_result.findall(raw_html)
 
     return [(int(r[0]), r[1]) for r in results]
+
+def extract_timeline_items(raw_html):
+    """Returns the timeline items.
+
+    TODO: include author
+
+    :param raw_html: Dump from any page.
+
+    """
+    results = re_timeline_items.findall(raw_html)
+
+    return [(r[0], r[1]) for r in results]
