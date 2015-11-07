@@ -102,8 +102,6 @@ class CartmanApp(object):
             self.print_function_help(func_name)
             return
 
-        self.login()
-
         try:
             output = func(*args.parameters)
         except exceptions.InvalidParameter as ex:
@@ -224,7 +222,7 @@ class CartmanApp(object):
     def input(self, prompt):
         return raw_input(prompt)
 
-    def get(self, query_string, data=None, handle_errors=True):
+    def get(self, query_string, data=None, handle_errors=True, nologin=False):
         """Generates a GET query on the target Trac system.
 
         TODO: extract all the possible error elements as message.
@@ -237,6 +235,9 @@ class CartmanApp(object):
                               HTTP return code (default: True).
 
         """
+
+        if not nologin: self.login()
+
         r = self.session.get(self.base_url + query_string, data=data)
 
         if r.status_code >= 400 and handle_errors:
@@ -289,7 +290,7 @@ class CartmanApp(object):
 
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
-        r = self.get("/login", handle_errors=False)
+        r = self.get("/login", handle_errors=False, nologin=True)
 
         if r.status_code not in (200, 302):
             msg = ("login failed on {} (bad user, password or auth type)"
@@ -298,7 +299,7 @@ class CartmanApp(object):
 
         # Load a page to get the new cookies.
         if r.status_code != 302:
-            r = self.get("/")
+            r = self.get("/", nologin=True)
 
         self.logged_in = True
 
