@@ -798,14 +798,17 @@ class CartmanApp(object):
 
         return output
 
-    def run_timeline(self, daysback):
-        """Show activity timeline up to the given number of items.
+    def run_timeline(self, daysback=None):
+        """Show tickets activity timeline
 
-        usage: cm timeline daysback
+        usage: cm timeline [daysback]
 
         """
         output = []
-        query_string = "/timeline?ticket=on&daysback={}".format(daysback)
+        query_string = "/timeline?ticket=on"
+        if daysback: query_string += "&daysback={}".format(daysback)
+
+        print query_string
 
         r = self.get(query_string)
         for item, description in text.extract_timeline_items(r.text):
