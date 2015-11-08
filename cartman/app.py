@@ -798,6 +798,22 @@ class CartmanApp(object):
 
         return output
 
+    def run_timeline(self, daysback=None):
+        """Show tickets activity timeline
+
+        usage: cm timeline [daysback]
+
+        """
+        output = []
+        query_string = "/timeline?ticket=on"
+        if daysback: query_string += "&daysback={}".format(daysback)
+
+        r = self.get(query_string)
+        for item, description in text.extract_timeline_items(r.text):
+            output.append(u"{}. {}".format(item, description))
+
+        return output
+
     def run_status(self, ticket_id, status=None):
         """Updates the status of a ticket.
 
