@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2014 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2015 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -806,7 +806,8 @@ class CartmanApp(object):
         """
         output = []
         query_string = "/timeline?ticket=on"
-        if daysback: query_string += "&daysback={}".format(daysback)
+        if daysback:
+            query_string += "&daysback={}".format(daysback)
 
         r = self.get(query_string)
         for item, description in text.extract_timeline_items(r.text):
