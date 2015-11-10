@@ -524,10 +524,6 @@ class CartmanApp(object):
         """
         ticket_id = text.validate_id(ticket_id)
 
-        # Load the timestamps from the ticket page.
-        r = self.get("/ticket/{}".format(ticket_id))
-        timestamps = self._extract_timestamps(r.text)
-
         if self.message:
             comment = self.message
         else:
@@ -535,6 +531,10 @@ class CartmanApp(object):
 
         if not comment.strip():
             raise exceptions.FatalError("empty comment, cancelling")
+
+        # Load the timestamps from the ticket page.
+        r = self.get("/ticket/{}".format(ticket_id))
+        timestamps = self._extract_timestamps(r.text)
 
         data = {
             "comment": comment,
