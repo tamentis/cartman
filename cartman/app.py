@@ -222,7 +222,7 @@ class CartmanApp(object):
     def input(self, prompt):
         return raw_input(prompt)
 
-    def get(self, query_string, data=None, handle_errors=True, authenticated=True):
+    def get(self, query_string, data=None, handle_errors=True):
         """Generates a GET query on the target Trac system.
 
         TODO: extract all the possible error elements as message.
@@ -235,8 +235,6 @@ class CartmanApp(object):
                               HTTP return code (default: True).
 
         """
-
-        if authenticated: self.login()
 
         r = self.session.get(self.base_url + query_string, data=data)
 
@@ -290,7 +288,7 @@ class CartmanApp(object):
 
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
-        r = self.get("/login", handle_errors=False, authenticated=False)
+        r = self.get("/login", handle_errors=False)
 
         if r.status_code not in (200, 302):
             msg = ("login failed on {} (bad user, password or auth type)"
@@ -299,7 +297,7 @@ class CartmanApp(object):
 
         # Load a page to get the new cookies.
         if r.status_code != 302:
-            r = self.get("/", authenticated=False)
+            r = self.get("/")
 
         self.logged_in = True
 
@@ -483,6 +481,8 @@ class CartmanApp(object):
             value = s[1]
             fields_data["field_" + field] = value
 
+        self.login()
+
         # Load the timestamps from the ticket page.
         r = self.get("/ticket/{}".format(ticket_id))
         timestamps = self._extract_timestamps(r.text)
@@ -531,6 +531,8 @@ class CartmanApp(object):
 
         if not comment.strip():
             raise exceptions.FatalError("empty comment, cancelling")
+
+        self.login()
 
         # Load the timestamps from the ticket page.
         r = self.get("/ticket/{}".format(ticket_id))
@@ -593,6 +595,8 @@ class CartmanApp(object):
         # If all else fail, assign it to yourself.
         if not headers["To"]:
             headers["To"] = self.username
+
+        self.login()
 
         valid = False
         while not valid:
@@ -731,6 +735,9 @@ class CartmanApp(object):
         usage: cm properties
 
         """
+
+        self.login()
+
         properties = self.get_properties()
 
         def extract_options(prop):
@@ -764,6 +771,8 @@ class CartmanApp(object):
 
         query_string = "/report/{}?format=tab".format(report_id)
 
+        self.login()
+
         for t in self.get_tickets(query_string):
             output.append(t.format_title())
 
@@ -776,6 +785,8 @@ class CartmanApp(object):
 
         """
         output = []
+
+        self.login()
 
         for d in self.get_dicts("/report?format=tab"):
             output.append("#{report}. {title}".format(**d))
@@ -792,6 +803,8 @@ class CartmanApp(object):
         """
         output = []
         query_string = "/search?q={}".format("+".join(terms))
+
+        self.login()
 
         r = self.get(query_string)
         for ticket_id, description in text.extract_search_results(r.text):
@@ -810,6 +823,8 @@ class CartmanApp(object):
         if daysback:
             query_string += "&daysback={}".format(daysback)
 
+        self.login()
+
         r = self.get(query_string)
         for item, description in text.extract_timeline_items(r.text):
             output.append(u"{}. {}".format(item, description))
@@ -824,6 +839,8 @@ class CartmanApp(object):
         """
         output = []
         ticket_id = text.validate_id(ticket_id)
+
+        self.login()
 
         # Get all the available actions for this ticket
         r = self.get("/ticket/{}".format(ticket_id))
@@ -867,6 +884,8 @@ class CartmanApp(object):
         ticket_id = text.validate_id(ticket_id)
 
         query_string = "/ticket/{}?format=tab".format(ticket_id)
+
+        self.login()
 
         t = next(self.get_tickets(query_string))
         title = t.format_title()
