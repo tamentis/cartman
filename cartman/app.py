@@ -187,7 +187,9 @@ class CartmanApp(object):
         JavaScript dictionary exposed on the query page.
 
         """
-        return text.extract_properties(self.get("/query").text)
+        # NOTE: lack of "order" parameter disables "max" request too
+        r = self.get("/query?max=1&order=priority")
+        return text.extract_properties(r.text)
 
     def check_version(self, raw_html):
         """Print a warning if the version of Trac is unsupported."""
