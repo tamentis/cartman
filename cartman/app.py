@@ -296,10 +296,6 @@ class CartmanApp(object):
                    .format(r.request.url))
             raise exceptions.LoginError(msg)
 
-        # Load a page to get the new cookies.
-        if r.status_code != 302:
-            r = self.get("/")
-
         self.logged_in = True
 
     def get_dicts(self, query_string):
