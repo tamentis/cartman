@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2011 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2015 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -36,6 +36,8 @@ def main():
                         help="comment/message to be added (status, comment)")
     parser.add_argument("-i", dest="stdin_id", action="store_true",
                         help="grab ticket_id from stdin")
+    parser.add_argument("--message-file", action="store",
+                        help="read message from file/stdin, disable editor")
     parser.add_argument("-a", dest="open_after", action="store_true",
                         help="open ticket in browser after command")
     parser.add_argument("-s", dest="site", action="store",

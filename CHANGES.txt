@@ -1,4 +1,4 @@
-0.2.3 (2014-..-..)
+0.2.3 (201.-..-..)
 ==================
 
  - add a configuration item to define the editor (by Nicolas Schodet <nico@ni.fr.eu.org>).
@@ -6,6 +6,7 @@
    to Josh Strange <josh@joshstrange.com>).
  - fix property lookup (including option groups for milestone lookup on 1.0).
  - add timeline command (thanks to Sandro Santilli @strk)
+ - allow to pass a fully formed message from the command line with --message-file
 
 0.2.2 (2013-09-01)
 ==================

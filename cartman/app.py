@@ -84,6 +84,7 @@ class CartmanApp(object):
         self.add_comment = args.add_comment
         self.message = args.message
         self.template = args.template
+        self.message_file = args.message_file
 
         self.ensure_directories()
         self.read_config()
@@ -188,6 +189,18 @@ class CartmanApp(object):
         # NOTE: lack of "order" parameter disables "max" request too
         r = self.get("/query?max=1&order=priority")
         return text.extract_properties(r.text)
+
+    def get_property_options(self):
+        """Return all the property options, with option groups expanded."""
+        options = {}
+        for name, prop in self.get_properties().items():
+            if "options" not in prop:
+                continue
+            options[name] = prop["options"]
+            if "optgroups" in prop:
+                for optgroup in prop["optgroups"]:
+                    options[name] += optgroup["options"]
+        return options
 
     def check_version(self, raw_html):
         """Print a warning if the version of Trac is unsupported."""
@@ -578,7 +591,14 @@ class CartmanApp(object):
         template = self.resolve_template()
 
         if not template:
-            template = DEFAULT_TEMPLATE
+            if self.message_file:
+                if self.message_file == "-":
+                    template = sys.stdin.read()
+                else:
+                    with open(self.message_file) as fp:
+                        template = fp.read()
+            else:
+                template = DEFAULT_TEMPLATE
 
         # Parse the template ahead of time, allowing us to insert the Owner/To.
         ep = email.parser.Parser()
@@ -600,7 +620,7 @@ class CartmanApp(object):
         while not valid:
             # Get the properties at each iteration, in case an admin updated
             # the list in the mean time.
-            properties = self.get_properties()
+            options = self.get_property_options()
 
             # Assume the user will produce a valid ticket
             valid = True
@@ -614,7 +634,10 @@ class CartmanApp(object):
             fp.write(body)
 
             fp.close()
-            self.editor(filename)
+
+            # When reading the message from stdin, we can't edit, skip editor.
+            if not self.message_file:
+                self.editor(filename)
 
             # Use the email parser to get the headers.
             ep = email.parser.Parser()
@@ -641,10 +664,10 @@ class CartmanApp(object):
             # try to complete them.
             for key in fuzzy_match_fields:
                 lkey = key.lower()
-                if lkey not in properties:
+                if lkey not in options:
                     continue
 
-                valid_options = properties[lkey]["options"]
+                valid_options = options[lkey]
 
                 # The specified value is not available in the multi-choice.
                 if key in headers and headers[key] not in valid_options:
@@ -671,10 +694,16 @@ class CartmanApp(object):
                     print(u" - {}".format(error))
 
                 try:
-                    self.input("\n-- Hit Enter to return to editor, "\
-                              "^C to abort --\n")
+                    if not self.message_file:
+                        self.input("\n-- Hit Enter to return to editor, "
+                                   "^C to abort --\n")
                 except KeyboardInterrupt:
                     raise exceptions.FatalError("ticket creation interrupted")
+
+            # There is no editor loop when reading message from stdin, just
+            # print the errors and exit.
+            if self.message_file:
+                break
 
         # Since the body is expected to be using CRLF line termination, we
         # replace newlines by CRLF if no CRLF is found.
@@ -736,25 +765,17 @@ class CartmanApp(object):
 
         self.login()
 
-        properties = self.get_properties()
-
-        def extract_options(prop):
-            options = []
-            options += prop["options"]
-            if "optgroups" in prop:
-                for optgroup in prop["optgroups"]:
-                    options += optgroup["options"]
-            return options
+        options = self.get_property_options()
 
         output = []
         for title, prop in (("Milestones", "milestone"),
                 ("Components", "component"),
                 ("Status", "status"),
                 ("Priorities", "priority")):
-            if prop in properties:
+            if prop in options:
                 output.extend([
                     ui.title(title),
-                    ", ".join(extract_options(properties[prop])),
+                    ", ".join(options[prop]),
                     ""])
         return output
 
