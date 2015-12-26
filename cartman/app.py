@@ -155,7 +155,7 @@ class CartmanApp(object):
         if auth_type not in AUTH_TYPES:
             supported_auths = ", ".join(sorted(AUTH_TYPES.keys()))
             msg = ("invalid auth setting '{}', supported: {}"
-                  .format(auth_type, supported_auths))
+                   .format(auth_type, supported_auths))
             raise exceptions.ConfigError(msg)
         self.auth_type = auth_type
 
@@ -481,7 +481,7 @@ class CartmanApp(object):
         if not values:
             raise exceptions.InvalidParameter("should provide at least one "
                                               "field change")
-        fields_data = { }
+        fields_data = {}
         for v in values:
             s = v.split('=', 1)
             if len(s) != 2:
@@ -762,16 +762,15 @@ class CartmanApp(object):
         usage: cm properties
 
         """
-
         self.login()
 
         options = self.get_property_options()
 
         output = []
         for title, prop in (("Milestones", "milestone"),
-                ("Components", "component"),
-                ("Status", "status"),
-                ("Priorities", "priority")):
+                            ("Components", "component"),
+                            ("Status", "status"),
+                            ("Priorities", "priority")):
             if prop in options:
                 output.extend([
                     ui.title(title),
@@ -870,7 +869,8 @@ class CartmanApp(object):
             status = self.extract_status_from_ticket_page(r.text)
             output.append("Current status: {}".format(status))
             if statuses:
-                output.append("Available statuses: {}".format(", ".join(statuses)))
+                output.append("Available statuses: {}"
+                              .format(", ".join(statuses)))
             return output
 
         if not status:

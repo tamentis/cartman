@@ -16,4 +16,3 @@ try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
-

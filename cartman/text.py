@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2014 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2015 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -114,6 +114,7 @@ def extract_timestamps_v0(raw_html):
         "ts": extract_timestamps_common("ts", raw_html),
     }
 
+
 def extract_timestamps_v1(raw_html):
     return {
         "start_time": extract_timestamps_common("start_time", raw_html),
@@ -172,7 +173,7 @@ def extract_properties(raw_html):
 
     """
     re_prop = r"var properties=(.+?);\s+var "
-    prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE|re.DOTALL)
+    prop_tokens = re.findall(re_prop, raw_html, re.MULTILINE | re.DOTALL)
 
     if len(prop_tokens) < 1:
         return {}
@@ -221,6 +222,7 @@ def extract_search_results(raw_html):
     results = re_search_result.findall(raw_html)
 
     return [(int(r[0]), r[1]) for r in results]
+
 
 def extract_timeline_items(raw_html):
     """Returns the timeline items.

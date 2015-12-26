@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2015 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -56,10 +56,11 @@ class Ticket(object):
 
     def format_title(self):
         return "{id_fmt} {summary} ({reporter})".format(
-            id_fmt = self.format_id(),
-            summary = self.summary,
-            reporter = self.reporter,
+            id_fmt=self.format_id(),
+            summary=self.summary,
+            reporter=self.reporter,
         )
+
 
 def factory(ticket_dict):
     """Create a new ticket and copy the properties from a dictionary, with a
