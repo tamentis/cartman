@@ -68,6 +68,7 @@ class DummyArgs:
         self.add_comment = False
         self.message = None
         self.template = None
+        self.message_file = None
 
 
 class AppUnitTest(unittest.TestCase):
