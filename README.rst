@@ -3,14 +3,10 @@ cartman
 
 .. image:: https://travis-ci.org/tamentis/cartman.png
 
-*cartman* is an overweight, immature, spoiled, outspoken, lazy, foul-mouthed,
-mean-spirited, racist, sexist, anti-semitic, xenophobic, sociopathic,
-narcissistic, and ill-tempered elementary school student living with his
-mother. Wait... wrong cartman.
-
 *cartman* allows you to create and manage your Trac_ tickets from the
 command-line, without the need to setup physical access to the Trac_
-installation/database. All you need is a Trac_ account.
+installation/database or even the need to install a plugin on Trac_.  All you
+need is a Trac_ account.
 
 Examples
 --------
@@ -34,27 +30,19 @@ following::
 
 Configuration Options
 ^^^^^^^^^^^^^^^^^^^^^
+Each section represent a site which can be selected using the ``-s``
+command-line argument.  Within each section, the following settings are
+available:
 
-Required Settings:
-
- - base_url
- - username
- - password
-
-Optional Settings:
-
- - auth_type
- - verify_ssl_cert
- - editor
-
-The ``auth_type`` will force cartman to use the give authtication type.
-Currently supported auth values are: basic, digest. If not specified defaults
-to basic (which is the most unsafe option).
-
-The ``verify_ssl_cert`` will force cartman to access an SSL site with a
-self-signed or invalid SSL certificate. Use this with care.
-
-The ``editor`` will override the editor defined in ``$EDITOR``.
+- ``base_url`` - required, defines the URL of your Trac system
+- ``username`` - required
+- ``password`` - required
+- ``auth_type`` - forces an authentication type, currently available: ``basic``
+  (default), ``digest``.
+- ``verify_ssl_cert`` - ignore self-signed or invalid SSL certificates if set
+  to false.
+- ``editor`` - override the editor defined the ``$EDITOR`` environment
+  variable.
 
 
 Command walk through
@@ -62,7 +50,6 @@ Command walk through
 
 Report Listing and Search
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Dump a list of tickets on screen, without details::
 
     $ cm report 1
@@ -76,28 +63,24 @@ Another way to find ticket is using the search command::
 
 Ticket View
 ^^^^^^^^^^^
-
 Show all the properties of a ticket::
 
     $ cm view 1
 
 List of Reports
 ^^^^^^^^^^^^^^^
-
 Get a list of all the available reports with::
 
     $ cm reports
 
 System Properties
 ^^^^^^^^^^^^^^^^^
-
 This will dump on screen all the Milestones, Components, Versions::
 
     $ cm properties
 
 Creating a ticket
 ^^^^^^^^^^^^^^^^^
-
 Creating a ticket will work similarly to writing a new email in mutt_, it loads
 your current ``$EDITOR`` and lets you edit the details of the ticket. Assuming
 all the parameters are correct, it will create the ticket as soon as you save
@@ -135,7 +118,6 @@ the template used by default (without ``-t``).
 
 Commenting on a ticket
 ^^^^^^^^^^^^^^^^^^^^^^
-
 Just like creating a ticket, adding a comment is just like mutt_, your current
 ``$EDITOR`` will be loaded on a blank file for you to edit. Upon save and exit,
 *cartman* will commit this new comment and return silently, unless an error
@@ -150,7 +132,6 @@ If the comment is short enough to fit on the command line, you may use the
 
 View/Set the status of a ticket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 View the current status of a ticket, and the available statuses::
 
     $ cm status 1
@@ -192,6 +173,16 @@ You would pass the ``-s`` parameter to ``cm`` to define which site to access::
 
 You may define all common configuration settings in the ``[DEFAULT]`` section.
 
+Using cartman without editor
+----------------------------
+You may need to integrate cartman with other software where opening an editor
+does not make sense.  In that case you can automatically create tickets from
+a file using the ``--message-file`` option::
+
+    cm new --message-file=secerror.txt
+
+This file would need to contain a complete ticket, if anything is missing,
+cartman will exit with an error message.
 
 Installation
 ------------
@@ -201,25 +192,25 @@ Quick and dirty if you are not familiar with Python packaging::
 
 Requirements
 ------------
- - Python 2.7+, 3.3+ (not 3.2, not 2.6)
- - python-requests 1.2 and above
+- Python 2.7+, 3.3+ (not 3.2, not 2.6)
+- python-requests 1.2 and above
 
 
 Compatibility
 -------------
- - Tested on Trac 0.12.5 and 1.0.1
- - Probably still works on 0.11, but untested.
+- Tested on Trac 0.12.5 and 1.0.1
+- Probably still works on 0.11, but untested.
 
 
 Hacking
 -------
- - The following command will create one virtualenv and sandbox for each latest
-   0.12 and 1.0 releases of Trac::
+- The following command will create one virtualenv and sandbox for each latest
+  0.12 and 1.0 releases of Trac::
 
     $ ./tools/mkenv.sh
 
- - You can then serve one or the other using, the default admin user/pass is
-   sandbox/sandbox::
+- You can then serve one or the other using, the default admin user/pass is
+  sandbox/sandbox::
 
     $ ./tools/serve-0.12.sh
 
@@ -227,30 +218,30 @@ Hacking
 
     $ ./tools/serve-1.0.sh
 
- - Follow PEP-8, existing style then the following notes.
- - For dictionaries, lists: keep commas after each items, closing bracket
-   should close on the same column as the first letter of the statement with the
-   opening bracket.
- - Use double-quotes for strings unless it makes it easier on certain strings
-   (avoids escaped double-quotes).
- - If an error is exceptional, let the exception rise.
+- Follow PEP-8, existing style then the following notes.
+- For dictionaries, lists: keep commas after each items, closing bracket
+  should close on the same column as the first letter of the statement with the
+  opening bracket.
+- Use double-quotes for strings unless it makes it easier on certain strings
+  (avoids escaped double-quotes).
+- If an error is exceptional, let the exception rise.
 
 
 Distribute
 ----------
- - Change the version in cartman/__init__.py
- - Commit
- - Create a tag::
+- Change the version in cartman/__init__.py
+- Commit
+- Create a tag::
 
     git tag -a vX.Y.Z -m 'Releasing vX.Y.Z'
     git push --tags
 
- - Download the file from github (release section),
- - Sign it::
+- Download the file from github (release section),
+- Sign it::
 
     gpg --armor --detach-sig cartman-X.Y.Z.tar.gz
 
- - Distribute on Pypi::
+- Distribute on Pypi::
 
     python setup.py sdist upload
 

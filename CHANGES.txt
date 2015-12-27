@@ -1,53 +1,51 @@
-0.2.3 (201.-..-..)
-==================
+Changelog
+=========
 
- - add a configuration item to define the editor (by Nicolas Schodet <nico@ni.fr.eu.org>).
- - fix the parsing of properties when one of them contains a semi-colon (thanks
-   to Josh Strange <josh@joshstrange.com>).
- - fix property lookup (including option groups for milestone lookup on 1.0).
- - add timeline command (thanks to Sandro Santilli @strk)
- - allow to pass a fully formed message from the command line with --message-file
+0.2.3 (2015-12-27)
+------------------
+- add a configuration item to define the editor (by Nicolas Schodet <nico@ni.fr.eu.org>).
+- fix the parsing of properties when one of them contains a semi-colon (thanks
+  to Josh Strange <josh@joshstrange.com>).
+- fix property lookup (including option groups for milestone lookup on 1.0).
+- add timeline command (thanks to Sandro Santilli @strk)
+- allow to pass a fully formed message from the command line with --message-file
 
 0.2.2 (2013-09-01)
-==================
-
- - added ``search`` command.
- - crash properly and early when trac return error 500.
- - crash with a descriptive message when you lack permission to create a
-   ticket.
- - don't die if the ``base_url`` has a trailing slash.
- - test the existence of base_url instead of stack tracing.
- - create the ~/.cartman/ directory by default.
- - die with an error message if you don't have an $EDITOR env var.
- - fix fetching current ticket status on v1.0+
+------------------
+- added ``search`` command.
+- crash properly and early when trac return error 500.
+- crash with a descriptive message when you lack permission to create a
+  ticket.
+- don't die if the ``base_url`` has a trailing slash.
+- test the existence of base_url instead of stack tracing.
+- create the ~/.cartman/ directory by default.
+- die with an error message if you don't have an $EDITOR env var.
+- fix fetching current ticket status on v1.0+
 
 0.2.1 (2013-05-23)
-==================
-
- - added the ``default`` template,
- - allow an owner to be specified, even with a template,
- - added v1.0 compatibility,
- - show Priority in ``cm properties``,
- - fixed a bug lower-casing the properties after tokenized fuzzy match.
- - fixed bug in ``view`` if the ticket contains unicode.
+------------------
+- added the ``default`` template,
+- allow an owner to be specified, even with a template,
+- added v1.0 compatibility,
+- show Priority in ``cm properties``,
+- fixed a bug lower-casing the properties after tokenized fuzzy match.
+- fixed bug in ``view`` if the ticket contains unicode.
 
 0.2.0 (2013-05-03)
-==================
-
- - cm help now prints a list of commands (by goodwillcoding@webhippo.net),
- - add auth_type to the config  (by goodwillcoding@webhippo.net),
- - basic debianization (by Ryan P. Kelly <rpkelly@cpan.org>),
- - added template support (in ~/.cartman/templates),
- - document how to hack on this thing,
- - move the configuration in a sub-directory,
- - added option to skip SSL cert validation,
- - added support for Trac 0.12,
- - match single tokens during fuzzy find,
- - python 3.3 support,
- - transmit ticket body with CRLF end of lines.
+------------------
+- cm help now prints a list of commands (by goodwillcoding@webhippo.net),
+- add auth_type to the config  (by goodwillcoding@webhippo.net),
+- basic debianization (by Ryan P. Kelly <rpkelly@cpan.org>),
+- added template support (in ~/.cartman/templates),
+- document how to hack on this thing,
+- move the configuration in a sub-directory,
+- added option to skip SSL cert validation,
+- added support for Trac 0.12,
+- match single tokens during fuzzy find,
+- python 3.3 support,
+- transmit ticket body with CRLF end of lines.
 
 0.1.0 (2011-09-11)
-==================
-
+------------------
 Initial release.
 
