@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2015 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2016 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -41,6 +41,7 @@ MAX_TRAC_VERSION = (1, 0)
 AUTH_TYPES = {
     "basic": requests.auth.HTTPBasicAuth,
     "digest": requests.auth.HTTPDigestAuth,
+    "acctmgr": lambda a, b: None,
 }
 
 DEFAULT_TEMPLATE = """To:
@@ -304,6 +305,12 @@ class CartmanApp(object):
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
         r = self.get("/login", handle_errors=False)
+
+        if self.auth_type == "acctmgr":
+            r = self.post("/login", {
+                "user": self.username,
+                "password": self.password,
+            })
 
         if r.status_code not in (200, 302):
             msg = ("login failed on {} (bad user, password or auth type)"
