@@ -38,7 +38,7 @@ available:
 - ``username`` - required
 - ``password`` - required
 - ``auth_type`` - forces an authentication type, currently available: ``basic``
-  (default), ``digest``.
+  (default), ``digest``, ``none``.
 - ``verify_ssl_cert`` - ignore self-signed or invalid SSL certificates if set
   to false.
 - ``editor`` - override the editor defined the ``$EDITOR`` environment

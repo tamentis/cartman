@@ -42,6 +42,7 @@ AUTH_TYPES = {
     "basic": requests.auth.HTTPBasicAuth,
     "digest": requests.auth.HTTPDigestAuth,
     "acctmgr": lambda a, b: None,
+    "none": None,
 }
 
 DEFAULT_TEMPLATE = """To:
@@ -92,7 +93,8 @@ class CartmanApp(object):
         self.session = requests.session()
 
         auth_class = AUTH_TYPES[self.auth_type]
-        self.session.auth = auth_class(self.username, self.password)
+        if auth_class:
+            self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
         func_name = "run_" + args.command
@@ -300,6 +302,10 @@ class CartmanApp(object):
 
         """
         if self.logged_in:
+            return
+
+        if self.auth_type == "none":
+            self.logged_in = True
             return
 
         # Seems that depending on the method used to serve trac, we need to use
