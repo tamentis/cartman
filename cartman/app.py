@@ -36,7 +36,7 @@ CONFIG_LOCATIONS = [
 ]
 
 MIN_TRAC_VERSION = (0, 11)
-MAX_TRAC_VERSION = (1, 0)
+MAX_TRAC_VERSION = (1, 2)
 
 AUTH_TYPES = {
     "basic": requests.auth.HTTPBasicAuth,
