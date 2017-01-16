@@ -94,7 +94,7 @@ class CartmanApp(object):
 
         auth_class = AUTH_TYPES[self.auth_type]
         if auth_class:
-          self.session.auth = auth_class(self.username, self.password)
+            self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
         func_name = "run_" + args.command
@@ -305,8 +305,8 @@ class CartmanApp(object):
             return
 
         if self.auth_type == "none":
-          self.logged_in = True
-          return
+            self.logged_in = True
+            return
 
         # Seems that depending on the method used to serve trac, we need to use
         # a different path to initiate authentication.
