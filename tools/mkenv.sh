@@ -20,4 +20,10 @@ virtualenv venv-1.0
 ./venv-1.0/bin/pip install "trac<1.0.999"
 ./venv-1.0/bin/trac-admin sandbox-1.0 initenv "Sandbox for Trac 1.0" sqlite:db/trac.db
 ./venv-1.0/bin/trac-admin sandbox-1.0 permission add sandbox TRAC_ADMIN
+
+virtualenv venv-1.2
+./venv-1.2/bin/pip install "trac<1.2.999"
+./venv-1.2/bin/trac-admin sandbox-1.2 initenv "Sandbox for Trac 1.2" sqlite:db/trac.db
+./venv-1.2/bin/trac-admin sandbox-1.2 permission add sandbox TRAC_ADMIN
+
 htpasswd -b -c -m htpasswd sandbox sandbox

@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2016 Bertrand Janin <b@janin.com>
+# Copyright (c) 2011-2017 Bertrand Janin <b@janin.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -36,12 +36,15 @@ CONFIG_LOCATIONS = [
 ]
 
 MIN_TRAC_VERSION = (0, 11)
-MAX_TRAC_VERSION = (1, 0)
+MAX_TRAC_VERSION = (1, 2)
 
+# List of all our accepted authentication types.  The values are authentication
+# classes used by the requests module.
 AUTH_TYPES = {
     "basic": requests.auth.HTTPBasicAuth,
     "digest": requests.auth.HTTPDigestAuth,
-    "acctmgr": lambda a, b: None,
+    "acctmgr": None,
+    "none": None,
 }
 
 DEFAULT_TEMPLATE = """To:
@@ -92,7 +95,8 @@ class CartmanApp(object):
         self.session = requests.session()
 
         auth_class = AUTH_TYPES[self.auth_type]
-        self.session.auth = auth_class(self.username, self.password)
+        if auth_class:
+            self.session.auth = auth_class(self.username, self.password)
         self.session.verify = self.verify_ssl_cert
 
         func_name = "run_" + args.command
@@ -146,8 +150,6 @@ class CartmanApp(object):
                                          "a base_url.".format(self.site))
 
         self.base_url = cp.get(self.site, "base_url").rstrip("/")
-        self.username = cp.get(self.site, "username")
-        self.password = cp.get(self.site, "password")
         self.verify_ssl_cert = cp.getboolean(self.site, "verify_ssl_cert")
 
         # load auth
@@ -159,6 +161,19 @@ class CartmanApp(object):
                    .format(auth_type, supported_auths))
             raise exceptions.ConfigError(msg)
         self.auth_type = auth_type
+
+        # On anonymous Trac systems, you may still specify a username, but you
+        # you are able to do some operations as anonymous.  For all other
+        # authentication types, username and password are mandatory.
+        if auth_type in ("none", "acctmgr"):
+            self.logged_in = True
+            try:
+                self.username = cp.get(self.site, "username")
+            except configparser.NoOptionError:
+                self.username = "anonymous"
+        else:
+            self.username = cp.get(self.site, "username")
+            self.password = cp.get(self.site, "password")
 
         if cp.has_option(self.site, "editor"):
             self.config_editor = cp.get(self.site, "editor")
@@ -475,10 +490,11 @@ class CartmanApp(object):
     #
 
     def run_change(self, ticket_id, *values):
-        """Make change to the given ticket_id. This command does not return
-        anything if successful.
+        """Make change to the given ticket_id.
 
-        TODO: support spanning an editor to change field values.
+        This command does not return anything if successful.
+
+        TODO: support spawning an editor to change field values.
 
         usage: cm change ticket_id field=value [field=value...]
 

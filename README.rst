@@ -35,10 +35,10 @@ command-line argument.  Within each section, the following settings are
 available:
 
 - ``base_url`` - required, defines the URL of your Trac system
-- ``username`` - required
-- ``password`` - required
 - ``auth_type`` - forces an authentication type, currently available: ``basic``
   (default), ``digest``.
+- ``username`` - required if ``auth_type`` is not ``none``
+- ``password`` - required if ``auth_type`` is not ``none``
 - ``verify_ssl_cert`` - ignore self-signed or invalid SSL certificates if set
   to false.
 - ``editor`` - override the editor defined the ``$EDITOR`` environment
@@ -198,14 +198,14 @@ Requirements
 
 Compatibility
 -------------
-- Tested on Trac 0.12.5 and 1.0.1
+- Tested on Trac 0.12.5 and 1.2.x
 - Probably still works on 0.11, but untested.
 
 
 Hacking
 -------
 - The following command will create one virtualenv and sandbox for each latest
-  0.12 and 1.0 releases of Trac::
+  0.12, 1.0 and 1.2 releases of Trac::
 
     $ ./tools/mkenv.sh
 
@@ -213,10 +213,8 @@ Hacking
   sandbox/sandbox::
 
     $ ./tools/serve-0.12.sh
-
-    -OR-
-
     $ ./tools/serve-1.0.sh
+    $ ./tools/serve-1.2.sh
 
 - Follow PEP-8, existing style then the following notes.
 - For dictionaries, lists: keep commas after each items, closing bracket
