@@ -36,7 +36,7 @@ available:
 
 - ``base_url`` - required, defines the URL of your Trac system
 - ``auth_type`` - forces an authentication type, currently available: ``basic``
-  (default), ``digest``.
+  (default), ``digest``, ``acctmgr`` or ``none``.
 - ``username`` - required if ``auth_type`` is not ``none``
 - ``password`` - required if ``auth_type`` is not ``none``
 - ``verify_ssl_cert`` - ignore self-signed or invalid SSL certificates if set

@@ -16,11 +16,14 @@ import csv
 import sys
 import os
 import subprocess
-import requests
 import tempfile
 import webbrowser
 import email.parser
+import warnings
 from collections import OrderedDict
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from cartman.compat import configparser
 from cartman import exceptions
@@ -151,6 +154,11 @@ class CartmanApp(object):
 
         self.base_url = cp.get(self.site, "base_url").rstrip("/")
         self.verify_ssl_cert = cp.getboolean(self.site, "verify_ssl_cert")
+
+        # If you've decided not to verify your SSL certificate, you're on your
+        # own, there is no need to add more warnings.
+        if not self.verify_ssl_cert:
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
         # load auth
         auth_type = cp.get(self.site, "auth_type")
