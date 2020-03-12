@@ -181,7 +181,9 @@ class CartmanApp(object):
                 self.username = "anonymous"
         else:
             self.username = cp.get(self.site, "username")
-            self.password = cp.get(self.site, "password")
+            self.password = os.environ.get('TRAC_PASSWORD', None)
+            if self.password is None:
+                self.password = cp.get(self.site, "password")
 
         if cp.has_option(self.site, "editor"):
             self.config_editor = cp.get(self.site, "editor")

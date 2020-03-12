@@ -28,6 +28,9 @@ following::
     username = tamentis
     password = sitnemat
 
+The password can also be specified through a `TRAC_PASSWORD`
+environment variable, which overrides the above `password` field.
+
 Configuration Options
 ^^^^^^^^^^^^^^^^^^^^^
 Each section represent a site which can be selected using the ``-s``
