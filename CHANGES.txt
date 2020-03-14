@@ -1,12 +1,14 @@
 Changelog
 =========
 
-0.3.0 (XXXX-XX-XX)
+0.3.0 (2020-03-14)
 ------------------
 - add new auth_type: acctmgr
 - add new auth_type: none (for sites accepting anonymous tickets/comments)
 - bump compatibility to 1.2.x
 - remove warnings if you decided not to verify your SSL cert.
+- use SafeConfigParser to allow variables interpolation (thanks to Sandro Santilli @strk)
+- allow password to be provided by environment (thanks to Antoine Beaupré @anarcat)
 
 0.2.3 (2015-12-27)
 ------------------
