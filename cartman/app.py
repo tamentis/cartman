@@ -145,7 +145,7 @@ class CartmanApp(object):
             "verify_ssl_cert": "true",
         }
 
-        cp = configparser.RawConfigParser(defaults)
+        cp = configparser.SafeConfigParser(defaults)
         cp.read(CONFIG_LOCATIONS)
 
         if not cp.has_option(self.site, "base_url"):
