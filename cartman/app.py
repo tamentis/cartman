@@ -92,8 +92,11 @@ class CartmanApp(object):
         self.message = args.message
         self.template = args.template
         self.message_file = args.message_file
+        self.config_file = args.config_file
 
-        self.ensure_directories()
+        if self.config_file is None:
+            self.ensure_directories()
+
         self.read_config()
         self.session = requests.session()
 
@@ -146,7 +149,11 @@ class CartmanApp(object):
         }
 
         cp = configparser.SafeConfigParser(defaults)
-        cp.read(CONFIG_LOCATIONS)
+
+        if self.config_file is not None:
+            cp.read(self.config_file)
+        else:
+            cp.read(CONFIG_LOCATIONS)
 
         if not cp.has_option(self.site, "base_url"):
             raise exceptions.ConfigError("unable to find a [{}] section with "
