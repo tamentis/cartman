@@ -568,10 +568,17 @@ class CartmanApp(object):
         """
         ticket_id = text.validate_id(ticket_id)
 
-        if self.message:
-            comment = self.message
+        if self.message_file:
+            if self.message_file == "-":
+                comment = sys.stdin.read()
+            else:
+                with open(self.message_file) as fp:
+                    comment = fp.read()
         else:
-            comment = self._read_comment()
+            if self.message:
+                comment = self.message
+            else:
+                comment = self._read_comment()
 
         if not comment.strip():
             raise exceptions.FatalError("empty comment, cancelling")
