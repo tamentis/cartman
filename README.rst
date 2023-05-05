@@ -230,7 +230,7 @@ Hacking
 
 Distribute
 ----------
-- Change the version in cartman/__init__.py
+- Change the version in cartman/__init__.py, update CHANGES.txt
 - Commit
 - Create a tag::
 

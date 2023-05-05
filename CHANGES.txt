@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.1 (2023-05-05)
+------------------
+- fix commenting on Trac 1.4 (thanks to @strk for PR and @MFreeze for suggestion)
+
 0.3.0 (2020-03-14)
 ------------------
 - add new auth_type: acctmgr
