@@ -173,7 +173,7 @@ class CartmanApp(object):
         # On anonymous Trac systems, you may still specify a username, but you
         # you are able to do some operations as anonymous.  For all other
         # authentication types, username and password are mandatory.
-        if auth_type in ("none", "acctmgr"):
+        if auth_type in ("none"):
             self.logged_in = True
             try:
                 self.username = cp.get(self.site, "username")
@@ -333,7 +333,7 @@ class CartmanApp(object):
 
         if self.auth_type == "acctmgr":
             r = self.post("/login", {
-                "user": self.username,
+                "username": self.username,
                 "password": self.password,
             })
 
