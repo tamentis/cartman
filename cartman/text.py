@@ -97,7 +97,7 @@ def extract_timestamps_common(token, raw_html):
     :param raw_html: Dump from the ticket page.
 
     """
-    regex = r"""name="{}" value="([^"]+)""".format(token)
+    regex = r"""name="{}"\s*value="([^"]+)""".format(token)
 
     m = re.search(regex, raw_html, re.MULTILINE)
 
