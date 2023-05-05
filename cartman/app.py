@@ -92,8 +92,11 @@ class CartmanApp(object):
         self.message = args.message
         self.template = args.template
         self.message_file = args.message_file
+        self.config_file = args.config_file
 
-        self.ensure_directories()
+        if self.config_file is None:
+            self.ensure_directories()
+
         self.read_config()
         self.session = requests.session()
 
@@ -146,7 +149,11 @@ class CartmanApp(object):
         }
 
         cp = configparser.SafeConfigParser(defaults)
-        cp.read(CONFIG_LOCATIONS)
+
+        if self.config_file is not None:
+            cp.read(self.config_file)
+        else:
+            cp.read(CONFIG_LOCATIONS)
 
         if not cp.has_option(self.site, "base_url"):
             raise exceptions.ConfigError("unable to find a [{}] section with "
@@ -173,7 +180,7 @@ class CartmanApp(object):
         # On anonymous Trac systems, you may still specify a username, but you
         # you are able to do some operations as anonymous.  For all other
         # authentication types, username and password are mandatory.
-        if auth_type in ("none", "acctmgr"):
+        if auth_type in ("none"):
             self.logged_in = True
             try:
                 self.username = cp.get(self.site, "username")
@@ -333,7 +340,7 @@ class CartmanApp(object):
 
         if self.auth_type == "acctmgr":
             r = self.post("/login", {
-                "user": self.username,
+                "username": self.username,
                 "password": self.password,
             })
 
@@ -568,10 +575,17 @@ class CartmanApp(object):
         """
         ticket_id = text.validate_id(ticket_id)
 
-        if self.message:
-            comment = self.message
+        if self.message_file:
+            if self.message_file == "-":
+                comment = sys.stdin.read()
+            else:
+                with open(self.message_file) as fp:
+                    comment = fp.read()
         else:
-            comment = self._read_comment()
+            if self.message:
+                comment = self.message
+            else:
+                comment = self._read_comment()
 
         if not comment.strip():
             raise exceptions.FatalError("empty comment, cancelling")
