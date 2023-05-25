@@ -1,8 +1,6 @@
 cartman
 =======
 
-.. image:: https://travis-ci.org/tamentis/cartman.png
-
 *cartman* allows you to create and manage your Trac_ tickets from the
 command-line, without the need to setup physical access to the Trac_
 installation/database or even the need to install a plugin on Trac_.  All you
