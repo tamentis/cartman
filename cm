@@ -50,7 +50,7 @@ def main():
     # extra positional argument.
     if args.stdin_id:
         data = sys.stdin.read()
-        m = re.match(".*#(\d+).*", data, flags=(re.MULTILINE|re.DOTALL))
+        m = re.match(r".*#(\d+).*", data, flags=(re.MULTILINE|re.DOTALL))
         if not m:
             raise cartman.exceptions.UsageException("No id on stdin")
 
